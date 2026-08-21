@@ -98,7 +98,8 @@
     <h2 data-t="coverH">Cover</h2>
     <div class="photo-row">
       <div class="photo-preview" id="avatarPreview">GL</div>
-      <button class="btn file-btn" type="button" data-t="uploadPhoto">Upload photo<input type="file" id="photoInput" accept="image/*"></button>
+      <label class="btn" for="photoInput" style="cursor:pointer;" data-t="uploadPhoto">Upload photo</label>
+      <input type="file" id="photoInput" accept="image/*" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;">
     </div>
     <div class="row2">
       <div class="field"><label data-t="lblGlofer">Glofer name</label><input type="text" id="gloferName" value="Laura Sabrina Pérez"></div>
@@ -211,7 +212,16 @@ let reviewType = "recurring";
 
 function listClients(){ return Object.keys(localStorage).filter(k=>k.startsWith(STORE_PREFIX)).map(k=>k.slice(STORE_PREFIX.length)); }
 function slugFor(name){ return (name||"client").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"") || "client"; }
-function currentSlug(){ return new URLSearchParams(location.search).get("client") || listClients()[0] || "demo"; }
+function mostRecentSlug(){
+  const clients = listClients();
+  if(clients.length===0) return null;
+  let best=null, bestTime=-1;
+  clients.forEach(c=>{
+    try{ const d=JSON.parse(localStorage.getItem(STORE_PREFIX+c)); const t=(d&&d.updatedAt)||0; if(t>=bestTime){bestTime=t; best=c;} }catch(e){ if(best===null) best=c; }
+  });
+  return best;
+}
+function currentSlug(){ return new URLSearchParams(location.search).get("client") || mostRecentSlug() || "demo"; }
 
 function saveCurrent(flash){
   const slug = currentSlug();
@@ -222,6 +232,7 @@ function saveCurrent(flash){
   data.flex = document.getElementById("sFlex").value;
   data.seniority = document.getElementById("sSeniority").value;
   data.reviewType = reviewType;
+  data.updatedAt = Date.now();
   localStorage.setItem(STORE_PREFIX+slug, JSON.stringify(data));
   refreshClientSelect(slug);
   if(flash){
