@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glofy — Performance Review Setup</title>
+<link rel="icon" href="https://raw.githubusercontent.com/comms-glofy/glofy-assets/refs/heads/main/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{ --dark:#1c1c1c; --dark2:#2f2f2f; --dark3:#272727; --lime:#ceff00; --gray:#e1e1e1; --off:#ededed;
+    --line:rgba(225,225,225,0.14); --muted:rgba(237,237,237,0.6); }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--dark);color:var(--off);font-family:'Montserrat',sans-serif;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;
+    padding:14px 28px;background:rgba(28,28,28,0.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);gap:14px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:900;font-size:15px;}
+  .brand .tag{color:var(--muted);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;padding-left:8px;border-left:1px solid var(--line);}
+  .topbar-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
+  .lang-toggle{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;}
+  .lang-toggle button{background:transparent;border:none;color:var(--muted);padding:8px 12px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .lang-toggle button.active{background:var(--lime);color:var(--dark);}
+  select{appearance:none;background:var(--dark2);color:var(--off);border:1px solid var(--line);border-radius:8px;
+    padding:9px 30px 9px 12px;font-size:12.5px;font-weight:600;font-family:inherit;
+    background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+    background-position:calc(100% - 15px) 55%,calc(100% - 10px) 55%;background-size:5px 5px;background-repeat:no-repeat;}
+  .btn{border:1px solid var(--line);background:var(--dark2);color:var(--off);border-radius:999px;padding:9px 17px;
+    font-size:12.5px;font-weight:700;display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-family:inherit;transition:.15s;}
+  .btn:hover{border-color:var(--lime);}
+  .btn.primary{background:var(--lime);color:var(--dark);border-color:var(--lime);}
+  .btn.primary:hover{filter:brightness(1.08);}
+
+  .wrap{max-width:760px;margin:0 auto;padding:34px 24px 90px;}
+  .banner{background:var(--dark3);border:1px solid var(--line);border-radius:12px;padding:14px 18px;font-size:12.5px;color:var(--muted);
+    margin-bottom:28px;line-height:1.6;}
+  .banner b{color:var(--lime);}
+  .card{background:var(--dark3);border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:18px;}
+  .card h2{font-size:13px;text-transform:uppercase;letter-spacing:.09em;color:var(--lime);font-weight:800;margin:0 0 4px;}
+  .card .sub{font-size:11.5px;color:var(--muted);margin:0 0 18px;line-height:1.5;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:11px;font-weight:700;color:var(--gray);margin-bottom:6px;text-transform:uppercase;letter-spacing:.03em;}
+  .field input[type=text], .field textarea{
+    width:100%;background:var(--dark2);border:1px solid var(--line);color:var(--off);border-radius:9px;
+    padding:10px 12px;font-family:inherit;font-size:13.5px;line-height:1.5;}
+  .field textarea{min-height:78px;resize:vertical;}
+  .field input:focus, .field textarea:focus{outline:none;border-color:var(--lime);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  .row4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  @media(max-width:600px){.row2,.row3,.row4{grid-template-columns:1fr;}}
+
+  .photo-row{display:flex;align-items:center;gap:16px;margin-bottom:16px;}
+  .photo-preview{width:64px;height:64px;border-radius:50%;background:var(--dark2);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;overflow:hidden;font-weight:800;color:var(--lime);flex:none;}
+  .photo-preview img{width:100%;height:100%;object-fit:cover;}
+  .file-btn{position:relative;overflow:hidden;}
+  .file-btn input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+
+  .seg{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;width:fit-content;}
+  .seg button{background:transparent;border:none;color:var(--muted);padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .seg button.active{background:var(--off);color:var(--dark);}
+
+  .slider-row{display:flex;align-items:center;gap:12px;font-size:12.5px;color:var(--gray);margin-bottom:12px;}
+  .slider-row span:first-child{width:90px;flex:none;font-weight:600;}
+  .slider-row input[type=range]{flex:1;accent-color:var(--lime);}
+  .slider-row b{width:18px;text-align:right;color:var(--off);}
+
+  .conditional{border-left:2px solid var(--lime);padding-left:16px;}
+  .conditional.hidden{display:none;}
+
+  .actions{position:sticky;bottom:0;background:linear-gradient(0deg, var(--dark) 60%, transparent);padding:20px 0 4px;
+    display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;}
+  .save-note{font-size:11px;color:var(--muted);align-self:center;margin-right:auto;}
+  .save-note.show{color:var(--lime);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><img src="https://raw.githubusercontent.com/comms-glofy/glofy-assets/refs/heads/main/logo-rebrand-glofy.png" alt="Glofy" style="height:18px;display:block;"><span class="tag" id="pageTag">Performance Review · Setup</span></div>
+  <div class="topbar-actions">
+    <select id="clientSelect"></select>
+    <div class="lang-toggle"><button id="enBtn" class="active">EN</button><button id="esBtn">ES</button></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="banner" id="banner"><b data-t="bannerB">Internal tool.</b> <span data-t="bannerP">Fill this in before the call — the client-facing view lives on a separate page and never shows these controls.</span></div>
+
+  <div class="card">
+    <h2 data-t="reviewTypeH">Review type</h2>
+    <p class="sub" data-t="reviewTypeSub">A first review covers team & project context. Recurring reviews skip straight to performance.</p>
+    <div class="seg" id="reviewTypeSeg"><button data-v="first" data-t="firstReview">First review</button><button data-v="recurring" class="active" data-t="recurringReview">Recurring</button></div>
+  </div>
+
+  <div class="card">
+    <h2 data-t="coverH">Cover</h2>
+    <div class="photo-row">
+      <div class="photo-preview" id="avatarPreview">GL</div>
+      <button class="btn file-btn" type="button" data-t="uploadPhoto">Upload photo<input type="file" id="photoInput" accept="image/*"></button>
+    </div>
+    <div class="row2">
+      <div class="field"><label data-t="lblGlofer">Glofer name</label><input type="text" id="gloferName" value="Laura Sabrina Pérez"></div>
+      <div class="field"><label data-t="lblRole">Role</label><input type="text" id="gloferRole" value="Sales & Marketing Support"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label data-t="lblClient">Client name</label><input type="text" id="clientName" value="Client Name"></div>
+      <div class="field"><label data-t="lblPeriod">Period</label><input type="text" id="periodTag" value="Feb – Aug 2026"></div>
+    </div>
+    <div class="row3">
+      <div class="field"><label data-t="lblStart">Start date</label><input type="text" id="startDate" value="05/08/2025"></div>
+      <div class="field"><label data-t="lblReports">Reports to</label><input type="text" id="reportsTo" value="Manager Name"></div>
+      <div class="field"><label data-t="lblSchedule">Schedule</label><input type="text" id="schedule" value="Full Time"></div>
+    </div>
+  </div>
+
+  <div class="card conditional" id="teamCard">
+    <h2 data-t="teamH">Team &amp; project <span style="color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0;">— <span data-t="onlyFirst">only shown for first reviews</span></span></h2>
+    <p class="sub" data-t="teamSub">Usually covered directly between client and Glofer — keep it short.</p>
+    <div class="field"><label data-t="lblTeam">Team</label><textarea id="teamText">Direct manager relationship is close and positive; a new teammate was onboarded and trained during the period, with operational tasks progressively delegated to them.</textarea></div>
+    <div class="field"><label data-t="lblProject">Project context</label><textarea id="projectText">Client is a consulting firm managing certification and assessment programs for regulated sectors. Scope covers client and advisor coordination, content management, audit preparation and process improvement.</textarea></div>
+  </div>
+
+  <div class="card">
+    <h2 data-t="hlH">Highlights</h2>
+    <p class="sub" data-t="hlSub">Factual, no flowery adjectives — what they actually did.</p>
+    <div class="field"><input type="text" id="hl1" value="Completed onboarding ahead of schedule."></div>
+    <div class="field"><input type="text" id="hl2" value="Shipped the first assigned module in month one."></div>
+    <div class="field"><input type="text" id="hl3" value="Proposed a process improvement adopted by the team."></div>
+    <div class="field"><input type="text" id="hl4" placeholder="Add another highlight…" value=""></div>
+  </div>
+
+  <div class="card">
+    <h2 data-t="perfH">Performance &amp; attitude</h2>
+    <div class="field"><textarea id="perfText">Consistently online during agreed hours with camera on for calls. Meets deadlines, flags blockers early, and has had no attendance issues this period.</textarea></div>
+    <div class="row4">
+      <div class="field"><label data-t="lblStat1">On-time attendance</label><input type="text" id="stat1" value="100%"></div>
+      <div class="field"><label data-t="lblStat2">Camera-on / online</label><input type="text" id="stat2" value="Daily"></div>
+      <div class="field"><label data-t="lblStat3">Avg. response time</label><input type="text" id="stat3" value="<2h"></div>
+      <div class="field"><label data-t="lblStat4">Escalations</label><input type="text" id="stat4" value="0"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 data-t="insightsH">Insights — Block A criteria</h2>
+    <div class="slider-row"><span data-t="sAutonomy">Autonomy</span><input type="range" min="1" max="5" step="1" id="sAutonomy" value="5"><b id="sAutonomyVal">5</b></div>
+    <div class="slider-row"><span data-t="sFlex">Flexibility</span><input type="range" min="1" max="5" step="1" id="sFlex" value="5"><b id="sFlexVal">5</b></div>
+    <div class="slider-row"><span data-t="sSeniority">Seniority</span><input type="range" min="1" max="5" step="1" id="sSeniority" value="4"><b id="sSeniorityVal">4</b></div>
+  </div>
+
+  <div class="card">
+    <h2 data-t="huH">Heads-up &amp; alignment</h2>
+    <p class="sub" data-t="huSub">Travel, timezone changes, comp review requests — things to align with the client.</p>
+    <div class="field"><input type="text" id="hu1" value="Planning time off next month — confirming coverage plan in advance."></div>
+    <div class="field"><input type="text" id="hu2" placeholder="e.g. compensation review request…" value=""></div>
+    <div class="field"><input type="text" id="hu3" placeholder="Add another item…" value=""></div>
+  </div>
+
+  <div class="actions">
+    <span class="save-note" id="saveNote" data-t="saved">Saved</span>
+    <button class="btn" id="newClientBtn" data-t="newClient">+ New client</button>
+    <button class="btn primary" id="openPresentBtn" data-t="openPresent">Open presentation →</button>
+  </div>
+</div>
+
+<script>
+const I18N = {
+  en:{ bannerB:"Internal tool.", bannerP:"Fill this in before the call — the client-facing view lives on a separate page and never shows these controls.",
+    reviewTypeH:"Review type", reviewTypeSub:"A first review covers team & project context. Recurring reviews skip straight to performance.",
+    firstReview:"First review", recurringReview:"Recurring",
+    coverH:"Cover", uploadPhoto:"Upload photo", lblGlofer:"Glofer name", lblRole:"Role", lblClient:"Client name", lblPeriod:"Period",
+    lblStart:"Start date", lblReports:"Reports to", lblSchedule:"Schedule",
+    teamH:"Team & project", onlyFirst:"only shown for first reviews", teamSub:"Usually covered directly between client and Glofer — keep it short.",
+    lblTeam:"Team", lblProject:"Project context",
+    hlH:"Highlights", hlSub:"Factual, no flowery adjectives — what they actually did.",
+    perfH:"Performance & attitude", lblStat1:"On-time attendance", lblStat2:"Camera-on / online", lblStat3:"Avg. response time", lblStat4:"Escalations",
+    insightsH:"Insights — Block A criteria", sAutonomy:"Autonomy", sFlex:"Flexibility", sSeniority:"Seniority",
+    huH:"Heads-up & alignment", huSub:"Travel, timezone changes, comp review requests — things to align with the client.",
+    saved:"Saved", newClient:"+ New client", openPresent:"Open presentation →", newPrompt:"Client name for the new review:"
+  },
+  es:{ bannerB:"Herramienta interna.", bannerP:"Completá esto antes de la llamada — la vista para el cliente vive en otra página y nunca muestra estos controles.",
+    reviewTypeH:"Tipo de review", reviewTypeSub:"La primera review incluye contexto de equipo y proyecto. Las recurrentes van directo a performance.",
+    firstReview:"Primera review", recurringReview:"Recurrente",
+    coverH:"Portada", uploadPhoto:"Subir foto", lblGlofer:"Nombre del Glofer", lblRole:"Rol", lblClient:"Nombre del cliente", lblPeriod:"Período",
+    lblStart:"Fecha de inicio", lblReports:"Reporta a", lblSchedule:"Modalidad",
+    teamH:"Equipo y proyecto", onlyFirst:"solo se muestra en primeras reviews", teamSub:"Normalmente se ve directo entre cliente y Glofer — mantenelo breve.",
+    lblTeam:"Equipo", lblProject:"Contexto del proyecto",
+    hlH:"Highlights", hlSub:"Fáctico, sin adjetivos calificativos — lo que realmente hizo.",
+    perfH:"Desempeño y actitud", lblStat1:"Puntualidad", lblStat2:"Cámara / online", lblStat3:"Tiempo de respuesta prom.", lblStat4:"Escalamientos",
+    insightsH:"Insights — Criterios Bloque A", sAutonomy:"Autonomía", sFlex:"Flexibilidad", sSeniority:"Seniority",
+    huH:"Puntos a alinear con el cliente", huSub:"Viajes, cambios de huso horario, pedidos de aumento — temas a coordinar con el cliente.",
+    saved:"Guardado", newClient:"+ Nuevo cliente", openPresent:"Abrir presentación →", newPrompt:"Nombre del cliente para el nuevo informe:"
+  }
+};
+let currentLang = "en";
+function applyLang(lang){
+  currentLang = lang;
+  document.querySelectorAll("[data-t]").forEach(el=>{ const k=el.getAttribute("data-t"); if(I18N[lang][k]!==undefined) el.textContent = I18N[lang][k]; });
+  document.getElementById("enBtn").classList.toggle("active", lang==="en");
+  document.getElementById("esBtn").classList.toggle("active", lang==="es");
+  refreshClientSelect(currentSlug());
+}
+document.getElementById("enBtn").onclick = ()=>applyLang("en");
+document.getElementById("esBtn").onclick = ()=>applyLang("es");
+
+const STORE_PREFIX = "glofy_pr_review_";
+const FIELDS = ["gloferName","gloferRole","clientName","periodTag","startDate","reportsTo","schedule",
+  "teamText","projectText","hl1","hl2","hl3","hl4","perfText","stat1","stat2","stat3","stat4","hu1","hu2","hu3"];
+let reviewType = "recurring";
+
+function listClients(){ return Object.keys(localStorage).filter(k=>k.startsWith(STORE_PREFIX)).map(k=>k.slice(STORE_PREFIX.length)); }
+function slugFor(name){ return (name||"client").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"") || "client"; }
+function currentSlug(){ return new URLSearchParams(location.search).get("client") || listClients()[0] || "demo"; }
+
+function saveCurrent(flash){
+  const slug = currentSlug();
+  const data = {};
+  FIELDS.forEach(id=>{ const el=document.getElementById(id); if(el) data[id]=el.value; });
+  data.photo = document.getElementById("avatarPreview").dataset.photo || "";
+  data.autonomy = document.getElementById("sAutonomy").value;
+  data.flex = document.getElementById("sFlex").value;
+  data.seniority = document.getElementById("sSeniority").value;
+  data.reviewType = reviewType;
+  localStorage.setItem(STORE_PREFIX+slug, JSON.stringify(data));
+  refreshClientSelect(slug);
+  if(flash){
+    const n = document.getElementById("saveNote"); n.classList.add("show");
+    clearTimeout(window._st); window._st = setTimeout(()=>n.classList.remove("show"), 900);
+  }
+}
+function loadClient(slug){
+  const raw = localStorage.getItem(STORE_PREFIX+slug);
+  const data = raw ? JSON.parse(raw) : null;
+  if(data){
+    FIELDS.forEach(id=>{ const el=document.getElementById(id); if(el && data[id]!==undefined) el.value = data[id]; });
+    if(data.photo) setAvatarImage(data.photo); else { document.getElementById("avatarPreview").innerHTML=""; document.getElementById("avatarPreview").dataset.photo=""; updateInitials(); }
+    document.getElementById("sAutonomy").value = data.autonomy || 5;
+    document.getElementById("sFlex").value = data.flex || 5;
+    document.getElementById("sSeniority").value = data.seniority || 4;
+    reviewType = data.reviewType || "recurring";
+  } else { reviewType = "recurring"; updateInitials(); }
+  document.querySelectorAll("#reviewTypeSeg button").forEach(b=>b.classList.toggle("active", b.dataset.v===reviewType));
+  document.getElementById("teamCard").classList.toggle("hidden", reviewType!=="first");
+  const url = new URL(location); url.searchParams.set("client", slug); history.replaceState(null,"",url);
+  syncSliderLabels(); refreshClientSelect(slug);
+}
+function refreshClientSelect(selectSlug){
+  const sel = document.getElementById("clientSelect");
+  const clients = listClients();
+  sel.innerHTML = "";
+  clients.forEach(c=>{
+    const raw = localStorage.getItem(STORE_PREFIX+c);
+    let label = c; try{ const d=JSON.parse(raw); if(d && d.clientName) label=d.clientName; }catch(e){}
+    const opt = document.createElement("option"); opt.value=c; opt.textContent=label; sel.appendChild(opt);
+  });
+  const newOpt = document.createElement("option"); newOpt.value="__new__"; newOpt.textContent = currentLang==="en"?"+ New client…":"+ Nuevo cliente…"; sel.appendChild(newOpt);
+  if(selectSlug) sel.value = selectSlug;
+}
+document.getElementById("clientSelect").onchange = (e)=>{
+  if(e.target.value === "__new__"){ createNewClient(); return; }
+  loadClient(e.target.value);
+};
+document.getElementById("newClientBtn").onclick = ()=>createNewClient();
+function createNewClient(){
+  const name = prompt(I18N[currentLang].newPrompt);
+  if(!name){ refreshClientSelect(currentSlug()); return; }
+  const slug = slugFor(name) + "-" + Date.now().toString(36).slice(-4);
+  document.getElementById("clientName").value = name;
+  const url = new URL(location); url.searchParams.set("client", slug); history.replaceState(null,"",url);
+  reviewType = "recurring";
+  saveCurrent();
+  loadClient(slug);
+}
+
+document.querySelectorAll("#reviewTypeSeg button").forEach(b=>{
+  b.onclick = ()=>{ reviewType=b.dataset.v; document.querySelectorAll("#reviewTypeSeg button").forEach(x=>x.classList.toggle("active",x===b));
+    document.getElementById("teamCard").classList.toggle("hidden", reviewType!=="first"); saveCurrent(true); };
+});
+
+document.querySelectorAll(".field input[type=text], .field textarea").forEach(el=>{
+  el.addEventListener("input", ()=>saveCurrent(true));
+});
+["sAutonomy","sFlex","sSeniority"].forEach(id=>{
+  document.getElementById(id).addEventListener("input", ()=>{ syncSliderLabels(); saveCurrent(true); });
+});
+function syncSliderLabels(){
+  document.getElementById("sAutonomyVal").textContent = document.getElementById("sAutonomy").value;
+  document.getElementById("sFlexVal").textContent = document.getElementById("sFlex").value;
+  document.getElementById("sSeniorityVal").textContent = document.getElementById("sSeniority").value;
+}
+function setAvatarImage(dataUrl){ const av=document.getElementById("avatarPreview"); av.innerHTML=`<img src="${dataUrl}" alt="">`; av.dataset.photo=dataUrl; }
+document.getElementById("photoInput").addEventListener("change",(e)=>{
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader(); reader.onload=()=>{ setAvatarImage(reader.result); saveCurrent(true); }; reader.readAsDataURL(file);
+});
+function updateInitials(){
+  const av=document.getElementById("avatarPreview"); if(av.dataset.photo) return;
+  const name=document.getElementById("gloferName").value.trim();
+  av.textContent = name.split(/\s+/).slice(0,2).map(w=>w[0]||"").join("").toUpperCase() || "GL";
+}
+document.getElementById("gloferName").addEventListener("input", updateInitials);
+
+document.getElementById("openPresentBtn").onclick = ()=>{
+  saveCurrent();
+  const slug = currentSlug();
+  window.open("index.html?client="+encodeURIComponent(slug), "_blank");
+};
+
+(function init(){
+  applyLang("en");
+  if(listClients().length===0) saveCurrent();
+  loadClient(currentSlug());
+  updateInitials();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glofy — Performance Review</title>
+<link rel="icon" href="https://raw.githubusercontent.com/comms-glofy/glofy-assets/refs/heads/main/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --dark:#1c1c1c; --dark2:#2f2f2f; --dark3:#272727;
+    --lime:#ceff00; --gray:#e1e1e1; --off:#ededed;
+    --line:rgba(225,225,225,0.12); --muted:rgba(237,237,237,0.6);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:radial-gradient(circle at 1px 1px, rgba(225,225,225,0.05) 1px, transparent 0) 0 0/26px 26px, var(--dark);
+    color:var(--off);font-family:'Montserrat',sans-serif;-webkit-font-smoothing:antialiased;}
+  ::selection{background:var(--lime);color:var(--dark);}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;}
+  @media (prefers-reduced-motion: reduce){ *{animation:none !important;transition:none !important;} }
+
+  .reveal{opacity:0;transform:translateY(16px);}
+  .reveal.in-view{opacity:1;transform:none;transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1);transition-delay:var(--d,0s);}
+
+  /* ---------- TOPBAR ---------- */
+  .topbar{position:sticky;top:0;z-index:80;display:flex;align-items:center;justify-content:space-between;
+    padding:14px 32px;background:rgba(28,28,28,0.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);gap:16px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:900;font-size:16px;letter-spacing:-.01em;}
+  .brand .os{color:var(--lime);}
+  .nav-links{display:flex;gap:24px;font-size:12px;font-weight:600;color:var(--gray);}
+  .nav-links a:hover{color:var(--lime);}
+  .topbar-actions{display:flex;align-items:center;gap:10px;}
+  .lang-toggle{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;}
+  .lang-toggle button{background:transparent;border:none;color:var(--muted);padding:8px 12px;font-size:11.5px;font-weight:700;}
+  .lang-toggle button.active{background:var(--lime);color:var(--dark);}
+  .btn{border:1px solid var(--line);background:var(--dark2);color:var(--off);border-radius:999px;padding:9px 18px;
+    font-size:12.5px;font-weight:700;display:inline-flex;align-items:center;gap:7px;transition:.15s ease;}
+  .btn:hover{border-color:var(--lime);transform:translateY(-1px);}
+  .btn.primary{background:var(--lime);color:var(--dark);border-color:var(--lime);}
+  .btn.primary:hover{filter:brightness(1.08);}
+  .btn:disabled{opacity:.55;cursor:progress;}
+  @media(max-width:920px){.nav-links{display:none;}}
+
+  .wrap{max-width:1120px;margin:0 auto;padding:0 32px;}
+  .eyebrow{font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--lime);font-weight:700;
+    display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+  .eyebrow::before{content:"";width:16px;height:1px;background:var(--lime);}
+
+  /* ---------- EMPTY STATE ---------- */
+  .empty-state{min-height:70vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;padding:40px;}
+  .empty-state h1{font-size:22px;margin:0;}
+  .empty-state p{color:var(--muted);font-size:13.5px;max-width:380px;margin:0;}
+
+  /* ---------- HERO ---------- */
+  .hero{position:relative;overflow:hidden;padding:78px 0 60px;border-bottom:1px solid var(--line);}
+  .hero-glow{position:absolute;top:-160px;right:-140px;width:480px;height:480px;border-radius:50%;
+    background:radial-gradient(circle, rgba(206,255,0,0.16), transparent 70%);filter:blur(10px);pointer-events:none;
+    animation:drift 10s ease-in-out infinite alternate;}
+  @keyframes drift{from{transform:translate(0,0) scale(1);}to{transform:translate(-20px,18px) scale(1.06);}}
+  .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center;position:relative;z-index:1;}
+  .hero h1{font-size:40px;font-weight:800;line-height:1.1;letter-spacing:-.015em;margin:0 0 14px;}
+  .hero .role{font-size:15px;color:var(--lime);font-weight:600;margin-bottom:14px;}
+  .hero .meta{display:flex;flex-wrap:wrap;gap:16px;font-size:12.5px;color:var(--gray);margin-bottom:26px;}
+  .hero .meta b{color:var(--off);font-weight:600;}
+  .hero-cta{display:flex;gap:12px;flex-wrap:wrap;}
+  @media(max-width:820px){.hero-grid{grid-template-columns:1fr;}.hero h1{font-size:30px;}}
+
+  /* ---------- PROFILE CARD MOCKUP ---------- */
+  .device{position:relative;perspective:1400px;}
+  .device-body{background:linear-gradient(160deg,#3a3a3a,#1a1a1a);border-radius:16px;padding:12px;
+    box-shadow:0 40px 70px rgba(0,0,0,0.5);transform:rotateX(3deg) rotateY(-4deg);transform-style:preserve-3d;}
+  .device-screen{background:#101010;border-radius:10px;overflow:hidden;border:1px solid #333;padding:20px;}
+  .device-top{display:flex;align-items:center;gap:6px;margin-bottom:16px;}
+  .device-top span{width:7px;height:7px;border-radius:50%;background:#555;}
+  .device-profile{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+  .device-avatar{width:46px;height:46px;border-radius:50%;background:var(--dark2);border:1px solid #333;display:flex;
+    align-items:center;justify-content:center;font-weight:800;color:var(--lime);font-size:15px;overflow:hidden;flex:none;}
+  .device-avatar img{width:100%;height:100%;object-fit:cover;}
+  .device-profile .nm{font-size:13px;font-weight:800;color:var(--off);}
+  .device-profile .rl{font-size:10px;color:var(--muted);}
+  .device-radar-wrap{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:10px;}
+  .device-radar-wrap canvas{max-height:150px;}
+  .float-chip{position:absolute;background:var(--dark2);border:1px solid var(--line);border-radius:10px;padding:9px 13px;
+    font-size:11px;font-weight:700;box-shadow:0 14px 30px rgba(0,0,0,.4);display:flex;align-items:center;gap:7px;
+    animation:floatY 4s ease-in-out infinite;}
+  .float-chip .dot{width:6px;height:6px;border-radius:50%;background:var(--lime);}
+  .float-chip .num{color:var(--lime);font-weight:800;}
+  .chip1{top:-14px;left:-26px;animation-delay:0s;}
+  .chip2{bottom:18px;right:-30px;animation-delay:1.4s;}
+  @keyframes floatY{0%,100%{transform:translateY(0);}50%{transform:translateY(-7px);}}
+  @media(max-width:820px){.chip1,.chip2{display:none;}}
+
+  /* ---------- SECTION shared ---------- */
+  .section{padding:70px 0;border-bottom:1px solid var(--line);}
+  .section h2{font-size:26px;font-weight:800;margin:0 0 14px;letter-spacing:-.01em;}
+  .section .lead{font-size:14px;color:var(--gray);max-width:560px;line-height:1.7;margin:0 0 32px;}
+  .info-note{font-size:12px;color:var(--muted);background:var(--dark3);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:22px;}
+
+  /* ---------- TEAM/PROJECT ---------- */
+  .narrative h4{font-size:11.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--lime);font-weight:700;margin:20px 0 8px;}
+  .narrative h4:first-child{margin-top:0;}
+  .narrative p{font-size:14.5px;line-height:1.75;color:var(--gray);margin:0 0 14px;}
+
+  /* ---------- HIGHLIGHTS / HEADS-UP bullet cards ---------- */
+  .bullet-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+  .bullet-card{background:var(--dark3);border:1px solid var(--line);border-radius:14px;padding:18px;transition:.2s ease;display:flex;gap:12px;align-items:flex-start;}
+  .bullet-card:hover{border-color:var(--lime);transform:translateY(-3px);}
+  .bullet-card .mark{flex:none;width:26px;height:26px;border-radius:50%;background:rgba(206,255,0,0.14);color:var(--lime);
+    display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;}
+  .bullet-card p{margin:0;font-size:13.5px;line-height:1.55;color:var(--gray);}
+  @media(max-width:700px){.bullet-grid{grid-template-columns:1fr;}}
+
+  /* ---------- PERFORMANCE stats ---------- */
+  .perf-text{font-size:15px;line-height:1.8;color:var(--gray);margin:0 0 30px;max-width:640px;}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  .stat-card{background:var(--dark3);border:1px solid var(--line);border-radius:14px;padding:18px 16px;transition:transform .2s ease, border-color .2s ease;}
+  .stat-card:hover{transform:translateY(-3px);border-color:rgba(206,255,0,0.35);}
+  .stat-card .num{font-size:24px;font-weight:800;color:var(--lime);line-height:1;}
+  .stat-card .lbl{font-size:11px;color:var(--gray);margin-top:8px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;opacity:.8;}
+  @media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr);}}
+
+  /* ---------- INSIGHTS device frame ---------- */
+  .insights-frame{max-width:520px;margin:0 auto;background:var(--dark3);border:1px solid var(--line);border-radius:20px;padding:34px;
+    box-shadow:0 30px 60px rgba(0,0,0,.35);}
+  .insights-frame .cap{font-size:12px;color:var(--gray);opacity:.75;text-align:center;margin-top:14px;}
+
+  /* ---------- NETWORK GRAPHIC / cross-sell ---------- */
+  .network-graphic{width:100%;max-width:620px;margin:6px auto 30px;display:block;}
+  .network-line{stroke:rgba(206,255,0,0.45);stroke-width:1.2;stroke-dasharray:5 5;fill:none;animation:dashFlow 2.4s linear infinite;}
+  @keyframes dashFlow{to{stroke-dashoffset:-20;}}
+  .network-node circle{fill:var(--dark2);stroke:var(--lime);stroke-width:1.6;animation:pulseNode 2.6s ease-in-out infinite;}
+  .network-node text{fill:var(--gray);font-family:'Montserrat',sans-serif;font-weight:700;font-size:9.5px;}
+  @keyframes pulseNode{0%,100%{r:4.5;}50%{r:6;}}
+  .talent-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:13px;}
+  .talent-card{background:var(--dark3);border:1px solid var(--line);border-radius:14px;padding:16px;transition:.2s ease;}
+  .talent-card:hover{border-color:var(--lime);transform:translateY(-4px);box-shadow:0 14px 30px rgba(0,0,0,0.35);}
+  .talent-card .icon{width:30px;height:30px;border-radius:9px;background:rgba(206,255,0,0.12);color:var(--lime);display:flex;align-items:center;justify-content:center;margin-bottom:9px;}
+  .talent-card .icon svg{width:16px;height:16px;}
+  .talent-card .cat{font-size:12px;font-weight:800;color:var(--off);margin-bottom:2px;}
+  .talent-card .blurb{font-size:10.5px;color:var(--lime);opacity:.85;margin-bottom:8px;font-weight:600;}
+  .talent-card ul{margin:0;padding:0;list-style:none;}
+  .talent-card li{font-size:11.5px;color:var(--gray);padding:3px 0;border-top:1px solid var(--line);}
+  .talent-card li:first-child{border-top:none;}
+
+  /* ---------- FOOTER CTA ---------- */
+  .cta-section{padding:70px 0;text-align:center;position:relative;overflow:hidden;}
+  .cta-section .hero-glow{top:auto;bottom:-200px;left:50%;transform:translateX(-50%);}
+  .cta-section h2{font-size:28px;font-weight:800;margin:0 0 12px;position:relative;z-index:1;}
+  .cta-section p{font-size:14px;color:var(--gray);margin:0 0 26px;position:relative;z-index:1;max-width:480px;margin-left:auto;margin-right:auto;}
+  .cta-buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative;z-index:1;}
+  .footer-bar{border-top:1px solid var(--line);padding:22px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+  .footer-bar .contact{font-size:11.5px;color:var(--gray);opacity:.7;}
+  .footer-bar img{height:18px;opacity:.75;}
+  .footer-wordmark{display:none;align-items:center;font-weight:900;font-size:13px;color:#161616;}
+  .footer-wordmark span{color:#8a9c00;}
+
+  /* ---------- PDF EXPORT MODE ---------- */
+  body.pdf-export{background:#ffffff;color:#161616;}
+  body.pdf-export .topbar, body.pdf-export .hero-glow, body.pdf-export .footer-bar img{display:none !important;}
+  body.pdf-export .reveal{opacity:1 !important;transform:none !important;}
+  body.pdf-export .section, body.pdf-export .hero{border-color:#e2e2e2;}
+  body.pdf-export .stat-card, body.pdf-export .bullet-card, body.pdf-export .talent-card, body.pdf-export .insights-frame, body.pdf-export .info-note, body.pdf-export .device-screen{
+    background:#f6f6f4;border-color:#e2e2e2;box-shadow:none;}
+  body.pdf-export .stat-card .num, body.pdf-export .eyebrow, body.pdf-export .hero .role, body.pdf-export .talent-card .cat,
+  body.pdf-export .talent-card .blurb, body.pdf-export .bullet-card .mark{color:#5c6d00;}
+  body.pdf-export .stat-card .lbl, body.pdf-export .hero .meta, body.pdf-export .narrative p, body.pdf-export .perf-text,
+  body.pdf-export .talent-card li, body.pdf-export .section .lead, body.pdf-export .insights-frame .cap,
+  body.pdf-export .footer-bar .contact, body.pdf-export .bullet-card p, body.pdf-export .info-note{color:#3a3a3a;opacity:1;}
+  body.pdf-export .hero h1, body.pdf-export .section h2, body.pdf-export .cta-section h2{color:#161616;}
+  body.pdf-export .talent-card .icon, body.pdf-export .bullet-card .mark{background:rgba(92,109,0,0.14);}
+  body.pdf-export .footer-wordmark{display:inline-flex !important;}
+  body.pdf-export .device-profile .nm{color:#161616;}
+  body.pdf-export .device-profile .rl{color:#3a3a3a;}
+  body.pdf-export .float-chip{display:none;}
+
+  @media(max-width:640px){ .topbar{padding:12px 18px;} .wrap{padding:0 20px;} .hero{padding:50px 0 40px;} }
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+const STORE_PREFIX = "glofy_pr_review_";
+const FIELDS = ["gloferName","gloferRole","clientName","periodTag","startDate","reportsTo","schedule",
+  "teamText","projectText","hl1","hl2","hl3","hl4","perfText","stat1","stat2","stat3","stat4","hu1","hu2","hu3"];
+
+function listClients(){ return Object.keys(localStorage).filter(k=>k.startsWith(STORE_PREFIX)).map(k=>k.slice(STORE_PREFIX.length)); }
+function currentSlug(){ return new URLSearchParams(location.search).get("client") || listClients()[0] || null; }
+
+const slug = currentSlug();
+const raw = slug ? localStorage.getItem(STORE_PREFIX+slug) : null;
+const D = raw ? JSON.parse(raw) : null;
+
+if(!D){
+  document.getElementById("app").innerHTML = `
+    <div class="topbar"><div class="brand"><img src="https://raw.githubusercontent.com/comms-glofy/glofy-assets/refs/heads/main/logo-rebrand-glofy.png" alt="Glofy" style="height:22px;display:block;"></div></div>
+    <div class="empty-state">
+      <h1>No review loaded</h1>
+      <p>Open this page from the setup tool so it knows which client to show — or load one from there first.</p>
+      <a class="btn primary" href="setup.html">Go to setup →</a>
+    </div>`;
+} else {
+  renderPage(D);
+}
+
+function renderPage(d){
+  const isFirst = d.reviewType === "first";
+  document.getElementById("app").innerHTML = `
+  <div class="topbar">
+    <div class="brand"><img src="https://raw.githubusercontent.com/comms-glofy/glofy-assets/refs/heads/main/logo-rebrand-glofy.png" alt="Glofy" style="height:22px;display:block;"></div>
+    <div class="nav-links">
+      ${isFirst ? '<a href="#team" data-t="navTeam">Context</a>' : ''}
+      <a href="#highlights" data-t="navHl">Highlights</a>
+      <a href="#performance" data-t="navPerf">Performance</a>
+      <a href="#insights" data-t="navIns">Insights</a>
+      <a href="#grow" data-t="navGrow">Grow the team</a>
+    </div>
+    <div class="topbar-actions">
+      <div class="lang-toggle"><button id="enBtn" class="active">EN</button><button id="esBtn">ES</button></div>
+      <button class="btn primary" id="pdfBtn">↓ <span data-t="downloadPdf">Download PDF</span></button>
+    </div>
+  </div>
+
+  <section class="hero">
+    <div class="hero-glow"></div>
+    <div class="wrap hero-grid">
+      <div class="reveal" style="--d:.05s">
+        <div class="eyebrow" data-t="heroEyebrow">Performance Review · ${esc(d.periodTag)}</div>
+        <h1>${esc(d.gloferName)}</h1>
+        <div class="role">${esc(d.gloferRole)} — <span data-t="atLabel">at</span> ${esc(d.clientName)}</div>
+        <div class="meta">
+          <div><span data-t="startDate">Start date</span>: <b>${esc(d.startDate)}</b></div>
+          <div><span data-t="reportsTo">Reports to</span>: <b>${esc(d.reportsTo)}</b></div>
+          <div><span data-t="schedule">Schedule</span>: <b>${esc(d.schedule)}</b></div>
+        </div>
+        <div class="hero-cta">
+          <a class="btn primary" href="#performance" data-t="heroCta1">See how it's going</a>
+          <a class="btn" href="#grow" data-t="heroCta2">Grow this team</a>
+        </div>
+      </div>
+      <div class="device reveal" style="--d:.15s">
+        <div class="float-chip chip1"><span class="dot"></span><span class="num">${esc(d.stat1)}</span> <span data-t="chipStat1">attendance</span></div>
+        <div class="float-chip chip2"><span class="dot"></span><span class="num">${esc(d.stat4)}</span> <span data-t="chipStat4">escalations</span></div>
+        <div class="device-body">
+          <div class="device-screen">
+            <div class="device-top"><span></span><span></span><span></span></div>
+            <div class="device-profile">
+              <div class="device-avatar">${d.photo ? `<img src="${d.photo}">` : initials(d.gloferName)}</div>
+              <div><div class="nm">${esc(d.gloferName)}</div><div class="rl">${esc(d.gloferRole)}</div></div>
+            </div>
+            <div class="device-radar-wrap"><canvas id="heroRadar" height="150"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  ${isFirst ? `
+  <section class="section" id="team">
+    <div class="wrap">
+      <div class="eyebrow reveal" data-t="teamEyebrow">Context</div>
+      <h2 class="reveal" data-t="teamH">Team &amp; project</h2>
+      <div class="info-note reveal" style="--d:.03s" data-t="teamNote">Usually covered directly between the client and the Glofer — included here for a first-time review.</div>
+      <div class="narrative reveal" style="--d:.06s">
+        <h4 data-t="teamSubH">Team</h4><p>${esc(d.teamText)}</p>
+        <h4 data-t="projectH">Project context</h4><p>${esc(d.projectText)}</p>
+      </div>
+    </div>
+  </section>` : ``}
+
+  <section class="section" id="highlights">
+    <div class="wrap">
+      <div class="eyebrow reveal" data-t="hlEyebrow">Highlights</div>
+      <h2 class="reveal" data-t="hlH">Worth flagging this period</h2>
+      <div class="bullet-grid">
+        ${[d.hl1,d.hl2,d.hl3,d.hl4].filter(Boolean).map((t,i)=>`
+        <div class="bullet-card reveal" style="--d:${(0.04+i*0.05).toFixed(2)}s"><span class="mark">✓</span><p>${esc(t)}</p></div>`).join("")}
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="performance">
+    <div class="wrap">
+      <div class="eyebrow reveal" data-t="perfEyebrow">Performance</div>
+      <h2 class="reveal" data-t="perfH2">Performance &amp; attitude</h2>
+      <p class="perf-text reveal" style="--d:.04s">${esc(d.perfText)}</p>
+      <div class="stats">
+        <div class="stat-card reveal" style="--d:.08s"><div class="num">${esc(d.stat1)}</div><div class="lbl" data-t="stat1lbl">On-time attendance</div></div>
+        <div class="stat-card reveal" style="--d:.13s"><div class="num">${esc(d.stat2)}</div><div class="lbl" data-t="stat2lbl">Camera-on / online</div></div>
+        <div class="stat-card reveal" style="--d:.18s"><div class="num">${esc(d.stat3)}</div><div class="lbl" data-t="stat3lbl">Avg. response time</div></div>
+        <div class="stat-card reveal" style="--d:.23s"><div class="num">${esc(d.stat4)}</div><div class="lbl" data-t="stat4lbl">Escalations</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="insights">
+    <div class="wrap">
+      <div class="eyebrow reveal" data-t="insightsEyebrow">Insights</div>
+      <h2 class="reveal" data-t="insightsH">Assessment snapshot</h2>
+      <div class="insights-frame reveal" style="--d:.1s">
+        <canvas id="radarChart" height="260"></canvas>
+        <div class="cap" data-t="radarCap">Block A criteria — Autonomy · Flexibility · Seniority</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="grow" style="border-bottom:none;">
+    <div class="wrap">
+      <div class="eyebrow reveal" data-t="csEyebrow">Grow the team</div>
+      <h2 class="reveal" data-t="crossH">Looking to grow this team?</h2>
+      <p class="lead reveal" data-t="crossSub">A snapshot of the talent categories most Glofy clients combine with their current resource.</p>
+      <svg class="network-graphic reveal" style="--d:.05s" viewBox="0 0 640 190" aria-hidden="true">
+        <line class="network-line" x1="320" y1="95" x2="90" y2="30"></line>
+        <line class="network-line" x1="320" y1="95" x2="90" y2="160"></line>
+        <line class="network-line" x1="320" y1="95" x2="270" y2="20"></line>
+        <line class="network-line" x1="320" y1="95" x2="380" y2="170"></line>
+        <line class="network-line" x1="320" y1="95" x2="560" y2="55"></line>
+        <g class="network-node"><circle cx="90" cy="30" r="4.5"></circle><text x="90" y="16" text-anchor="middle">AI / ML</text></g>
+        <g class="network-node"><circle cx="90" cy="160" r="4.5" style="animation-delay:.3s"></circle><text x="90" y="178" text-anchor="middle">ERP/CRM</text></g>
+        <g class="network-node"><circle cx="270" cy="20" r="4.5" style="animation-delay:.6s"></circle><text x="270" y="12" text-anchor="middle">Core Tech</text></g>
+        <g class="network-node"><circle cx="380" cy="170" r="4.5" style="animation-delay:.9s"></circle><text x="380" y="188" text-anchor="middle">No-Dev</text></g>
+        <g class="network-node"><circle cx="560" cy="55" r="4.5" style="animation-delay:1.2s"></circle><text x="560" y="41" text-anchor="middle">Sales</text></g>
+        <g><circle cx="320" cy="95" r="20" fill="var(--lime)"></circle><text x="320" y="99" text-anchor="middle" font-family="Montserrat" font-weight="800" font-size="10" fill="#1c1c1c">${esc(d.clientName.slice(0,3).toUpperCase())}</text></g>
+      </svg>
+      <div class="talent-grid">
+        <div class="talent-card reveal" style="--d:.04s"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect></svg></div><div class="cat" data-t="catHighSpec">High Specialization</div><div class="blurb" data-t="catHighSpecBlurb">Ship AI-native product faster</div><ul><li>AI Engineer</li><li>ML Engineer</li><li>Python Engineer</li><li>DevOps Engineer</li></ul></div>
+        <div class="talent-card reveal" style="--d:.08s"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"></ellipse><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5"></path></svg></div><div class="cat" data-t="catErp">ERP / CRM / Enterprise</div><div class="blurb" data-t="catErpBlurb">Keep core systems running lean</div><ul><li>SAP Consultant</li><li>Salesforce Developer</li><li>Oracle Developer</li></ul></div>
+        <div class="talent-card reveal" style="--d:.12s"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></div><div class="cat" data-t="catCore">Core Tech</div><div class="blurb" data-t="catCoreBlurb">Add hands without headcount risk</div><ul><li>Full Stack Developer</li><li>Back-End Developer</li><li>QA Automation</li></ul></div>
+        <div class="talent-card reveal" style="--d:.16s"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle></svg></div><div class="cat" data-t="catNoDev">Digital No-Dev</div><div class="blurb" data-t="catNoDevBlurb">Launch campaigns without in-house hires</div><ul><li>UX/UI Designer</li><li>Growth Marketer</li><li>Content Creator</li></ul></div>
+        <div class="talent-card reveal" style="--d:.2s"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg></div><div class="cat" data-t="catSales">Sales &amp; Revenue</div><div class="blurb" data-t="catSalesBlurb">Close more pipeline this quarter</div><ul><li>SDR / BDR</li><li>Account Executive</li><li>CSM</li></ul></div>
+      </div>
+    </div>
+  </section>
+
+  ${(d.hu1||d.hu2||d.hu3) ? `
+  <section class="section" id="alignment">
+    <div class="wrap">
+      <div class="eyebrow reveal" data-t="huEyebrow">Alignment</div>
+      <h2 class="reveal" data-t="huH">Heads-up &amp; alignment</h2>
+      <div class="bullet-grid">
+        ${[d.hu1,d.hu2,d.hu3].filter(Boolean).map((t,i)=>`
+        <div class="bullet-card reveal" style="--d:${(0.04+i*0.05).toFixed(2)}s"><span class="mark">!</span><p>${esc(t)}</p></div>`).join("")}
+      </div>
+    </div>
+  </section>` : ``}
+
+  <section class="cta-section" id="contact">
+    <div class="hero-glow"></div>
+    <div class="wrap">
+      <h2 class="reveal" data-t="ctaH">Explore the full talent catalog</h2>
+      <p class="reveal" style="--d:.05s" data-t="ctaP">Rates, seniority levels and availability for every role.</p>
+      <div class="cta-buttons reveal" style="--d:.1s">
+        <a class="btn primary" href="https://glofy.co/scopes" target="_blank" data-t="ctaBtn1">View glofy.co/scopes →</a>
+        <a class="btn" href="mailto:hello@glofy.co" data-t="ctaBtn2">hello@glofy.co</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap footer-bar">
+    <img src="https://raw.githubusercontent.com/comms-glofy/glofy-assets/refs/heads/main/logo-rebrand-glofy.png" alt="Glofy">
+    <span class="footer-wordmark">GLO<span>FY</span></span>
+    <div class="contact" data-t="footerTag">Verified AI talent for global teams.</div>
+  </div>
+  `;
+  wireInteractivity(d);
+}
+
+function esc(s){ return (s||"").toString().replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function initials(name){ return (name||"").trim().split(/\s+/).slice(0,2).map(w=>w[0]||"").join("").toUpperCase() || "GL"; }
+
+/* ---------------- i18n ---------------- */
+const I18N = {
+  en:{ navTeam:"Context", navHl:"Highlights", navPerf:"Performance", navIns:"Insights", navGrow:"Grow the team",
+    downloadPdf:"Download PDF", heroEyebrow:"Performance Review ·", atLabel:"at",
+    startDate:"Start date", reportsTo:"Reports to", schedule:"Schedule",
+    chipStat1:"attendance", chipStat4:"escalations", heroCta1:"See how it's going", heroCta2:"Grow this team",
+    teamEyebrow:"Context", teamH:"Team & project", teamNote:"Usually covered directly between the client and the Glofer — included here for a first-time review.",
+    teamSubH:"Team", projectH:"Project context",
+    hlEyebrow:"Highlights", hlH:"Worth flagging this period",
+    perfEyebrow:"Performance", perfH2:"Performance & attitude",
+    stat1lbl:"On-time attendance", stat2lbl:"Camera-on / online", stat3lbl:"Avg. response time", stat4lbl:"Escalations",
+    insightsEyebrow:"Insights", insightsH:"Assessment snapshot", radarCap:"Block A criteria — Autonomy · Flexibility · Seniority",
+    csEyebrow:"Grow the team", crossH:"Looking to grow this team?", crossSub:"A snapshot of the talent categories most Glofy clients combine with their current resource.",
+    catHighSpec:"High Specialization", catErp:"ERP / CRM / Enterprise", catCore:"Core Tech", catNoDev:"Digital No-Dev", catSales:"Sales & Revenue",
+    catHighSpecBlurb:"Ship AI-native product faster", catErpBlurb:"Keep core systems running lean",
+    catCoreBlurb:"Add hands without headcount risk", catNoDevBlurb:"Launch campaigns without in-house hires", catSalesBlurb:"Close more pipeline this quarter",
+    huEyebrow:"Alignment", huH:"Heads-up & alignment",
+    ctaH:"Explore the full talent catalog", ctaP:"Rates, seniority levels and availability for every role.",
+    ctaBtn1:"View glofy.co/scopes →", ctaBtn2:"hello@glofy.co", footerTag:"Verified AI talent for global teams.",
+    pdfError:"Could not generate the PDF."
+  },
+  es:{ navTeam:"Contexto", navHl:"Highlights", navPerf:"Performance", navIns:"Insights", navGrow:"Crecer el equipo",
+    downloadPdf:"Descargar PDF", heroEyebrow:"Performance Review ·", atLabel:"en",
+    startDate:"Fecha de inicio", reportsTo:"Reporta a", schedule:"Modalidad",
+    chipStat1:"puntualidad", chipStat4:"escalamientos", heroCta1:"Ver cómo viene", heroCta2:"Crecer el equipo",
+    teamEyebrow:"Contexto", teamH:"Equipo y proyecto", teamNote:"Normalmente se ve directo entre el cliente y el Glofer — se incluye para la primera review.",
+    teamSubH:"Equipo", projectH:"Contexto del proyecto",
+    hlEyebrow:"Highlights", hlH:"Para destacar en este período",
+    perfEyebrow:"Performance", perfH2:"Desempeño y actitud",
+    stat1lbl:"Puntualidad", stat2lbl:"Cámara / online", stat3lbl:"Tiempo de respuesta prom.", stat4lbl:"Escalamientos",
+    insightsEyebrow:"Insights", insightsH:"Panorama del assessment", radarCap:"Criterios Bloque A — Autonomía · Flexibilidad · Seniority",
+    csEyebrow:"Crecer el equipo", crossH:"¿Buscás hacer crecer este equipo?", crossSub:"Categorías de talento que más suelen sumar los clientes de Glofy junto a su recurso actual.",
+    catHighSpec:"Alta especialización", catErp:"ERP / CRM / Enterprise", catCore:"Core Tech", catNoDev:"Digital No-Dev", catSales:"Sales & Revenue",
+    catHighSpecBlurb:"Acelerá producto AI-native", catErpBlurb:"Mantené los sistemas core sin fricción",
+    catCoreBlurb:"Sumá manos sin riesgo de headcount", catNoDevBlurb:"Lanzá campañas sin contratar in-house", catSalesBlurb:"Cerrá más pipeline este trimestre",
+    huEyebrow:"Alineación", huH:"Puntos a alinear con el cliente",
+    ctaH:"Explorá el catálogo completo de talento", ctaP:"Tarifas, niveles de seniority y disponibilidad para cada rol.",
+    ctaBtn1:"Ver glofy.co/scopes →", ctaBtn2:"hello@glofy.co", footerTag:"Verified AI talent for global teams.",
+    pdfError:"No se pudo generar el PDF."
+  }
+};
+let currentLang = "en";
+function applyLang(lang){
+  currentLang = lang;
+  document.querySelectorAll("[data-t]").forEach(el=>{ const k=el.getAttribute("data-t"); if(I18N[lang][k]!==undefined) el.textContent = I18N[lang][k]; });
+  document.getElementById("enBtn")?.classList.toggle("active", lang==="en");
+  document.getElementById("esBtn")?.classList.toggle("active", lang==="es");
+  document.documentElement.lang = lang;
+  renderRadars();
+}
+
+function wireInteractivity(d){
+  document.getElementById("enBtn").onclick = ()=>applyLang("en");
+  document.getElementById("esBtn").onclick = ()=>applyLang("es");
+  applyLang("en");
+
+  const io = new IntersectionObserver((entries)=>{ entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add("in-view"); }); }, {threshold:0.15});
+  document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
+
+  window._reviewData = d;
+  renderRadars();
+
+  document.getElementById("pdfBtn").onclick = async ()=>{
+    const btn = document.getElementById("pdfBtn");
+    btn.disabled = true;
+    document.body.classList.add("pdf-export");
+    renderRadars("pdf");
+    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+    try{
+      const canvas = await html2canvas(document.body, { backgroundColor:"#ffffff", scale:2, useCORS:true });
+      const imgData = canvas.toDataURL("image/jpeg", 0.95);
+      const { jsPDF } = window.jspdf;
+      const pdfWidthPt = 800;
+      const pdfHeightPt = canvas.height * (pdfWidthPt / canvas.width);
+      const pdf = new jsPDF({ unit:"pt", format:[pdfWidthPt, pdfHeightPt] });
+      pdf.addImage(imgData, "JPEG", 0, 0, pdfWidthPt, pdfHeightPt);
+      pdf.save(`glofy-performance-review-${slug}.pdf`);
+    }catch(err){
+      console.error(err); alert(I18N[currentLang].pdfError);
+    }finally{
+      document.body.classList.remove("pdf-export");
+      renderRadars("screen");
+      btn.disabled = false;
+    }
+  };
+}
+
+let heroChart, mainChart;
+function chartPalette(mode){
+  return mode === "pdf"
+    ? { grid:"rgba(20,20,20,0.18)", angle:"rgba(20,20,20,0.18)", label:"#161616", bg:"rgba(92,109,0,0.20)", border:"#5c6d00", point:"#5c6d00" }
+    : { grid:"rgba(225,225,225,0.16)", angle:"rgba(225,225,225,0.16)", label:"#ededed", bg:"rgba(206,255,0,0.22)", border:"#ceff00", point:"#ceff00" };
+}
+function renderRadars(mode){
+  const d = window._reviewData; if(!d) return;
+  const pal = chartPalette(mode || "screen");
+  const labels = [I18N[currentLang].catHighSpec ? ["Autonomy","Flexibility","Seniority"] : null][0] ||
+    (currentLang==="es" ? ["Autonomía","Flexibilidad","Seniority"] : ["Autonomy","Flexibility","Seniority"]);
+  const data = [Number(d.autonomy)||5, Number(d.flex)||5, Number(d.seniority)||4];
+  [{id:"radarChart", ref:"mainChart"}, {id:"heroRadar", ref:"heroChart"}].forEach(({id})=>{
+    const ctx = document.getElementById(id); if(!ctx) return;
+    const existing = id==="radarChart" ? mainChart : heroChart;
+    if(existing) existing.destroy();
+    const inst = new Chart(ctx, {
+      type:"radar",
+      data:{ labels, datasets:[{ data, backgroundColor:pal.bg, borderColor:pal.border, borderWidth:2, pointBackgroundColor:pal.point, pointRadius:id==="radarChart"?4:2 }]},
+      options:{ responsive:true, animation: mode==="pdf" ? false : {duration:900, easing:"easeOutQuart"}, plugins:{legend:{display:false}},
+        scales:{ r:{ min:0, max:5, ticks:{display:false}, grid:{color:pal.grid}, angleLines:{color:pal.angle},
+          pointLabels:{display:id==="radarChart", color:pal.label, font:{family:"Montserrat", size:12, weight:600}} } } }
+    });
+    if(id==="radarChart") mainChart = inst; else heroChart = inst;
+  });
+}
+</script>
+</body>
+</html>
