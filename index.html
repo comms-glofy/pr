@@ -1,513 +1,528 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Glofy — Performance Review</title>
+<title>Glofy — Informe de Performance Review</title>
 <link rel="icon" href="https://raw.githubusercontent.com/comms-glofy/glofy-assets/refs/heads/main/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-  :root{
-    --dark:#1c1c1c; --dark2:#2f2f2f; --dark3:#272727;
-    --lime:#ceff00; --gray:#e1e1e1; --off:#ededed;
-    --line:rgba(225,225,225,0.12); --muted:rgba(237,237,237,0.6);
-  }
+  :root{ --dark:#1c1c1c; --dark2:#2a2a2a; --dark3:#242424; --lime:#ceff00; --gray:#e1e1e1; --off:#ededed;
+    --line:rgba(225,225,225,0.12); --muted:rgba(237,237,237,0.55); --sidebar-w:270px; }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
-  body{margin:0;background:radial-gradient(circle at 1px 1px, rgba(225,225,225,0.05) 1px, transparent 0) 0 0/26px 26px, var(--dark);
-    color:var(--off);font-family:'Montserrat',sans-serif;-webkit-font-smoothing:antialiased;}
+  body{margin:0;background:var(--dark);color:var(--off);font-family:'Montserrat',sans-serif;-webkit-font-smoothing:antialiased;}
   ::selection{background:var(--lime);color:var(--dark);}
   a{color:inherit;text-decoration:none;}
   button{font-family:inherit;cursor:pointer;}
   @media (prefers-reduced-motion: reduce){ *{animation:none !important;transition:none !important;} }
 
-  .reveal{opacity:0;transform:translateY(16px);}
-  .reveal.in-view{opacity:1;transform:none;transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1);transition-delay:var(--d,0s);}
+  /* ---------- LAYOUT ---------- */
+  .app{display:flex;min-height:100vh;}
+  .sidebar{
+    width:var(--sidebar-w);flex:none;position:sticky;top:0;height:100vh;overflow-y:auto;
+    padding:32px 26px;border-right:1px solid var(--line);display:flex;flex-direction:column;
+  }
+  .sidebar img.logo{height:22px;display:block;margin-bottom:26px;}
+  .sidebar h1{font-size:20px;font-weight:800;line-height:1.25;margin:0 0 30px;}
+  .side-nav{display:flex;flex-direction:column;gap:15px;margin-bottom:auto;}
+  .side-nav a{font-size:13.5px;color:var(--muted);font-weight:500;transition:.15s;}
+  .side-nav a:hover{color:var(--gray);}
+  .side-nav a.active{color:#fff;font-weight:700;}
+  .side-nav a.hidden-link{display:none;}
+  .sidebar-actions{display:flex;flex-direction:column;gap:8px;margin-top:26px;}
+  .main{flex:1;min-width:0;padding:40px 44px 90px;max-width:1180px;}
 
-  /* ---------- TOPBAR ---------- */
-  .topbar{position:sticky;top:0;z-index:80;display:flex;align-items:center;justify-content:space-between;
-    padding:14px 32px;background:rgba(28,28,28,0.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);gap:16px;flex-wrap:wrap;}
-  .brand{display:flex;align-items:center;gap:8px;font-weight:900;font-size:16px;letter-spacing:-.01em;}
-  .brand .os{color:var(--lime);}
-  .nav-links{display:flex;gap:24px;font-size:12px;font-weight:600;color:var(--gray);}
-  .nav-links a:hover{color:var(--lime);}
-  .topbar-actions{display:flex;align-items:center;gap:10px;}
-  .lang-toggle{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;}
-  .lang-toggle button{background:transparent;border:none;color:var(--muted);padding:8px 12px;font-size:11.5px;font-weight:700;}
-  .lang-toggle button.active{background:var(--lime);color:var(--dark);}
-  .btn{border:1px solid var(--line);background:var(--dark2);color:var(--off);border-radius:999px;padding:9px 18px;
-    font-size:12.5px;font-weight:700;display:inline-flex;align-items:center;gap:7px;transition:.15s ease;}
-  .btn:hover{border-color:var(--lime);transform:translateY(-1px);}
+  .btn{border:1px solid var(--line);background:var(--dark2);color:var(--off);border-radius:999px;padding:10px 16px;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:.15s ease;}
+  .btn:hover{border-color:var(--lime);}
   .btn.primary{background:var(--lime);color:var(--dark);border-color:var(--lime);}
   .btn.primary:hover{filter:brightness(1.08);}
-  .btn:disabled{opacity:.55;cursor:progress;}
-  @media(max-width:920px){.nav-links{display:none;}}
+  .btn.ghost{background:transparent;}
+  .btn:disabled{opacity:.5;cursor:progress;}
+  .lang-toggle{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;align-self:flex-start;}
+  .lang-toggle button{background:transparent;border:none;color:var(--muted);padding:8px 12px;font-size:11px;font-weight:700;}
+  .lang-toggle button.active{background:var(--lime);color:var(--dark);}
+  select#clientSelect{width:100%;appearance:none;background:var(--dark2);color:var(--off);border:1px solid var(--line);
+    border-radius:8px;padding:9px 10px;font-size:12px;font-weight:600;margin-top:6px;}
+  .sidebar label.mini{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;}
 
-  .wrap{max-width:1120px;margin:0 auto;padding:0 32px;}
-  .eyebrow{font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--lime);font-weight:700;
-    display:flex;align-items:center;gap:8px;margin-bottom:14px;}
-  .eyebrow::before{content:"";width:16px;height:1px;background:var(--lime);}
+  .page-title{font-size:38px;font-weight:900;letter-spacing:-.02em;line-height:1.05;margin:0 0 10px;text-transform:uppercase;}
+  .page-sub{font-size:14px;color:var(--gray);opacity:.85;line-height:1.6;max-width:680px;margin:0 0 30px;}
 
-  /* ---------- EMPTY STATE ---------- */
-  .empty-state{min-height:70vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;padding:40px;}
-  .empty-state h1{font-size:22px;margin:0;}
-  .empty-state p{color:var(--muted);font-size:13.5px;max-width:380px;margin:0;}
+  /* ---------- CARD ---------- */
+  .card{position:relative;background:var(--dark3);border:1px solid var(--line);border-radius:22px;padding:26px 26px 24px;margin-bottom:18px;}
+  .card .kicker{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:14px;}
+  .card .dots{position:absolute;top:22px;right:22px;color:var(--muted);font-size:16px;letter-spacing:1px;opacity:.6;}
 
-  /* ---------- HERO ---------- */
-  .hero{position:relative;overflow:hidden;padding:78px 0 60px;border-bottom:1px solid var(--line);}
-  .hero-glow{position:absolute;top:-160px;right:-140px;width:480px;height:480px;border-radius:50%;
-    background:radial-gradient(circle, rgba(206,255,0,0.16), transparent 70%);filter:blur(10px);pointer-events:none;
-    animation:drift 10s ease-in-out infinite alternate;}
-  @keyframes drift{from{transform:translate(0,0) scale(1);}to{transform:translate(-20px,18px) scale(1.06);}}
-  .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center;position:relative;z-index:1;}
-  .hero h1{font-size:40px;font-weight:800;line-height:1.1;letter-spacing:-.015em;margin:0 0 14px;}
-  .hero .role{font-size:15px;color:var(--lime);font-weight:600;margin-bottom:14px;}
-  .hero .meta{display:flex;flex-wrap:wrap;gap:16px;font-size:12.5px;color:var(--gray);margin-bottom:26px;}
-  .hero .meta b{color:var(--off);font-weight:600;}
-  .hero-cta{display:flex;gap:12px;flex-wrap:wrap;}
-  @media(max-width:820px){.hero-grid{grid-template-columns:1fr;}.hero h1{font-size:30px;}}
+  /* ---------- DATOS GENERALES ---------- */
+  .cover-card{display:flex;gap:24px;align-items:stretch;}
+  .cover-photo{width:220px;flex:none;border-radius:16px;overflow:hidden;background:var(--dark2);position:relative;}
+  .cover-photo img{width:100%;height:100%;object-fit:cover;display:block;min-height:220px;}
+  .cover-photo .ph-fallback{width:100%;height:100%;min-height:220px;display:flex;align-items:center;justify-content:center;
+    font-size:42px;font-weight:800;color:var(--lime);}
+  .cover-right{flex:1;}
+  .cover-name{font-size:30px;font-weight:900;text-transform:uppercase;letter-spacing:-.01em;margin:0 0 18px;}
+  .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .field-box{background:var(--dark2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;}
+  .field-box .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin-bottom:5px;}
+  .field-box .val{font-size:15px;font-weight:700;color:var(--off);}
+  .field-box .val small{display:block;font-size:11px;font-weight:500;color:var(--muted);}
+  @media(max-width:760px){.cover-card{flex-direction:column;}.cover-photo{width:100%;}}
 
-  /* ---------- PROFILE CARD MOCKUP ---------- */
-  .device{position:relative;perspective:1400px;}
-  .device-body{background:linear-gradient(160deg,#3a3a3a,#1a1a1a);border-radius:16px;padding:12px;
-    box-shadow:0 40px 70px rgba(0,0,0,0.5);transform:rotateX(3deg) rotateY(-4deg);transform-style:preserve-3d;}
-  .device-screen{background:#101010;border-radius:10px;overflow:hidden;border:1px solid #333;padding:20px;}
-  .device-top{display:flex;align-items:center;gap:6px;margin-bottom:16px;}
-  .device-top span{width:7px;height:7px;border-radius:50%;background:#555;}
-  .device-profile{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
-  .device-avatar{width:46px;height:46px;border-radius:50%;background:var(--dark2);border:1px solid #333;display:flex;
-    align-items:center;justify-content:center;font-weight:800;color:var(--lime);font-size:15px;overflow:hidden;flex:none;}
-  .device-avatar img{width:100%;height:100%;object-fit:cover;}
-  .device-profile .nm{font-size:13px;font-weight:800;color:var(--off);}
-  .device-profile .rl{font-size:10px;color:var(--muted);}
-  .device-radar-wrap{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:10px;}
-  .device-radar-wrap canvas{max-height:150px;}
-  .float-chip{position:absolute;background:var(--dark2);border:1px solid var(--line);border-radius:10px;padding:9px 13px;
-    font-size:11px;font-weight:700;box-shadow:0 14px 30px rgba(0,0,0,.4);display:flex;align-items:center;gap:7px;
-    animation:floatY 4s ease-in-out infinite;}
-  .float-chip .dot{width:6px;height:6px;border-radius:50%;background:var(--lime);}
-  .float-chip .num{color:var(--lime);font-weight:800;}
-  .chip1{top:-14px;left:-26px;animation-delay:0s;}
-  .chip2{bottom:18px;right:-30px;animation-delay:1.4s;}
-  @keyframes floatY{0%,100%{transform:translateY(0);}50%{transform:translateY(-7px);}}
-  @media(max-width:820px){.chip1,.chip2{display:none;}}
+  /* ---------- MASONRY GRID ---------- */
+  .masonry{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;margin-bottom:0;}
+  .masonry .card{margin-bottom:0;}
+  @media(max-width:820px){.masonry{grid-template-columns:1fr;}}
 
-  /* ---------- SECTION shared ---------- */
-  .section{padding:70px 0;border-bottom:1px solid var(--line);}
-  .section h2{font-size:26px;font-weight:800;margin:0 0 14px;letter-spacing:-.01em;}
-  .section .lead{font-size:14px;color:var(--gray);max-width:560px;line-height:1.7;margin:0 0 32px;}
-  .info-note{font-size:12px;color:var(--muted);background:var(--dark3);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:22px;}
+  .pill-list{display:flex;flex-direction:column;gap:10px;}
+  .pill-item{background:var(--dark2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.5;color:var(--gray);}
 
-  /* ---------- TEAM/PROJECT ---------- */
-  .narrative h4{font-size:11.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--lime);font-weight:700;margin:20px 0 8px;}
+  .narrative h4{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin:16px 0 6px;}
   .narrative h4:first-child{margin-top:0;}
-  .narrative p{font-size:14.5px;line-height:1.75;color:var(--gray);margin:0 0 14px;}
+  .narrative p{font-size:13.5px;line-height:1.65;color:var(--gray);margin:0 0 10px;}
 
-  /* ---------- HIGHLIGHTS / HEADS-UP bullet cards ---------- */
-  .bullet-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
-  .bullet-card{background:var(--dark3);border:1px solid var(--line);border-radius:14px;padding:18px;transition:.2s ease;display:flex;gap:12px;align-items:flex-start;}
-  .bullet-card:hover{border-color:var(--lime);transform:translateY(-3px);}
-  .bullet-card .mark{flex:none;width:26px;height:26px;border-radius:50%;background:rgba(206,255,0,0.14);color:var(--lime);
-    display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;}
-  .bullet-card p{margin:0;font-size:13.5px;line-height:1.55;color:var(--gray);}
-  @media(max-width:700px){.bullet-grid{grid-template-columns:1fr;}}
+  .perf-body p{font-size:13.5px;line-height:1.7;color:var(--gray);margin:0 0 18px;}
+  .metric-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+  .metric-row .m-lbl{width:150px;flex:none;font-size:12.5px;color:var(--gray);}
+  .metric-track{flex:1;height:5px;background:var(--dark2);border-radius:3px;overflow:hidden;}
+  .metric-track i{display:block;height:100%;width:0;background:var(--lime);border-radius:3px;transition:width 1s cubic-bezier(.2,.8,.2,1);}
+  .metric-row .m-val{width:60px;text-align:right;flex:none;font-size:13px;font-weight:800;color:var(--lime);}
 
-  /* ---------- PERFORMANCE stats ---------- */
-  .perf-text{font-size:15px;line-height:1.8;color:var(--gray);margin:0 0 30px;max-width:640px;}
-  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
-  .stat-card{background:var(--dark3);border:1px solid var(--line);border-radius:14px;padding:18px 16px;transition:transform .2s ease, border-color .2s ease;}
-  .stat-card:hover{transform:translateY(-3px);border-color:rgba(206,255,0,0.35);}
-  .stat-card .num{font-size:24px;font-weight:800;color:var(--lime);line-height:1;}
-  .stat-card .lbl{font-size:11px;color:var(--gray);margin-top:8px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;opacity:.8;}
-  @media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr);}}
+  /* ---------- CROSS-SELL ---------- */
+  .suggestion-heading{font-size:14px;font-weight:800;text-decoration:underline;text-underline-offset:4px;margin:0 0 14px;text-transform:uppercase;letter-spacing:.02em;}
+  .suggestion-text{font-size:13.5px;line-height:1.7;color:var(--gray);margin:0 0 22px;max-width:760px;}
+  .role-tiles{display:flex;align-items:center;gap:22px;flex-wrap:wrap;}
+  .role-tile{background:var(--dark2);border:1px solid var(--line);border-radius:14px;padding:20px 26px;text-align:left;min-width:140px;}
+  .role-tile .n{font-size:30px;font-weight:900;color:var(--lime);line-height:1;margin-bottom:6px;}
+  .role-tile .lbl{font-size:13px;font-weight:600;color:var(--off);}
+  .tile-divider{width:1px;height:44px;background:var(--line);transform:rotate(18deg);}
 
-  /* ---------- INSIGHTS device frame ---------- */
-  .insights-frame{max-width:520px;margin:0 auto;background:var(--dark3);border:1px solid var(--line);border-radius:20px;padding:34px;
-    box-shadow:0 30px 60px rgba(0,0,0,.35);}
-  .insights-frame .cap{font-size:12px;color:var(--gray);opacity:.75;text-align:center;margin-top:14px;}
+  .catalog-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:26px 0 24px;}
+  .cat-card{background:var(--dark2);border:1px solid var(--line);border-radius:16px;overflow:hidden;}
+  .cat-photo{height:120px;position:relative;background:var(--dark3);}
+  .cat-photo img{width:100%;height:100%;object-fit:cover;display:block;}
+  .cat-photo::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.65));}
+  .cat-photo .cat-title{position:absolute;left:14px;bottom:10px;z-index:1;font-size:15px;font-weight:800;color:#fff;}
+  .cat-card.no-photo .cat-title{position:static;padding:16px 16px 0;font-size:15px;font-weight:800;color:#fff;}
+  .cat-tags{display:flex;flex-wrap:wrap;gap:6px;padding:14px 14px 16px;}
+  .cat-tag{border:1px solid var(--lime);color:var(--lime);border-radius:999px;padding:5px 11px;font-size:10.5px;font-weight:700;}
+  @media(max-width:900px){.catalog-grid{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:600px){.catalog-grid{grid-template-columns:1fr;}}
 
-  /* ---------- NETWORK GRAPHIC / cross-sell ---------- */
-  .network-graphic{width:100%;max-width:620px;margin:6px auto 30px;display:block;}
-  .network-line{stroke:rgba(206,255,0,0.45);stroke-width:1.2;stroke-dasharray:5 5;fill:none;animation:dashFlow 2.4s linear infinite;}
-  @keyframes dashFlow{to{stroke-dashoffset:-20;}}
-  .network-node circle{fill:var(--dark2);stroke:var(--lime);stroke-width:1.6;animation:pulseNode 2.6s ease-in-out infinite;}
-  .network-node text{fill:var(--gray);font-family:'Montserrat',sans-serif;font-weight:700;font-size:9.5px;}
-  @keyframes pulseNode{0%,100%{r:4.5;}50%{r:6;}}
-  .talent-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:13px;}
-  .talent-card{background:var(--dark3);border:1px solid var(--line);border-radius:14px;padding:16px;transition:.2s ease;}
-  .talent-card:hover{border-color:var(--lime);transform:translateY(-4px);box-shadow:0 14px 30px rgba(0,0,0,0.35);}
-  .talent-card .icon{width:30px;height:30px;border-radius:9px;background:rgba(206,255,0,0.12);color:var(--lime);display:flex;align-items:center;justify-content:center;margin-bottom:9px;}
-  .talent-card .icon svg{width:16px;height:16px;}
-  .talent-card .cat{font-size:12px;font-weight:800;color:var(--off);margin-bottom:2px;}
-  .talent-card .blurb{font-size:10.5px;color:var(--lime);opacity:.85;margin-bottom:8px;font-weight:600;}
-  .talent-card ul{margin:0;padding:0;list-style:none;}
-  .talent-card li{font-size:11.5px;color:var(--gray);padding:3px 0;border-top:1px solid var(--line);}
-  .talent-card li:first-child{border-top:none;}
+  .cta-btn{display:block;width:100%;text-align:center;background:var(--lime);color:var(--dark);border-radius:14px;
+    padding:18px;font-size:14.5px;font-weight:800;margin-top:8px;transition:.15s;}
+  .cta-btn:hover{filter:brightness(1.06);}
 
-  /* ---------- FOOTER CTA ---------- */
-  .cta-section{padding:70px 0;text-align:center;position:relative;overflow:hidden;}
-  .cta-section .hero-glow{top:auto;bottom:-200px;left:50%;transform:translateX(-50%);}
-  .cta-section h2{font-size:28px;font-weight:800;margin:0 0 12px;position:relative;z-index:1;}
-  .cta-section p{font-size:14px;color:var(--gray);margin:0 0 26px;position:relative;z-index:1;max-width:480px;margin-left:auto;margin-right:auto;}
-  .cta-buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative;z-index:1;}
-  .footer-bar{border-top:1px solid var(--line);padding:22px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
-  .footer-bar .contact{font-size:11.5px;color:var(--gray);opacity:.7;}
-  .footer-bar img{height:18px;opacity:.75;}
+  /* ---------- FOOTER ---------- */
+  .footer-card{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;}
+  .footer-card .kicker{margin-bottom:6px;}
+  .footer-card .links{font-size:13px;color:var(--gray);}
+  .footer-card .links a:hover{color:var(--lime);}
+  .footer-card img{height:20px;opacity:.85;}
+
+  .empty-state{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;padding:40px;}
+  .empty-state h1{font-size:20px;margin:0;}
+  .empty-state p{color:var(--muted);font-size:13px;max-width:440px;margin:0;line-height:1.6;}
+  .empty-state code{background:var(--dark2);padding:2px 6px;border-radius:5px;font-size:12px;}
+
+  .section-hidden{display:none;}
   .footer-wordmark{display:none;align-items:center;font-weight:900;font-size:13px;color:#161616;}
   .footer-wordmark span{color:#8a9c00;}
 
-  /* ---------- PDF EXPORT MODE ---------- */
-  body.pdf-export{background:#ffffff;color:#161616;}
-  body.pdf-export .topbar, body.pdf-export .hero-glow, body.pdf-export .footer-bar img{display:none !important;}
-  body.pdf-export .reveal{opacity:1 !important;transform:none !important;}
-  body.pdf-export .section, body.pdf-export .hero{border-color:#e2e2e2;}
-  body.pdf-export .stat-card, body.pdf-export .bullet-card, body.pdf-export .talent-card, body.pdf-export .insights-frame, body.pdf-export .info-note, body.pdf-export .device-screen{
-    background:#f6f6f4;border-color:#e2e2e2;box-shadow:none;}
-  body.pdf-export .stat-card .num, body.pdf-export .eyebrow, body.pdf-export .hero .role, body.pdf-export .talent-card .cat,
-  body.pdf-export .talent-card .blurb, body.pdf-export .bullet-card .mark{color:#5c6d00;}
-  body.pdf-export .stat-card .lbl, body.pdf-export .hero .meta, body.pdf-export .narrative p, body.pdf-export .perf-text,
-  body.pdf-export .talent-card li, body.pdf-export .section .lead, body.pdf-export .insights-frame .cap,
-  body.pdf-export .footer-bar .contact, body.pdf-export .bullet-card p, body.pdf-export .info-note{color:#3a3a3a;opacity:1;}
-  body.pdf-export .hero h1, body.pdf-export .section h2, body.pdf-export .cta-section h2{color:#161616;}
-  body.pdf-export .talent-card .icon, body.pdf-export .bullet-card .mark{background:rgba(92,109,0,0.14);}
-  body.pdf-export .footer-wordmark{display:inline-flex !important;}
-  body.pdf-export .device-profile .nm{color:#161616;}
-  body.pdf-export .device-profile .rl{color:#3a3a3a;}
-  body.pdf-export .float-chip{display:none;}
+  /* ---------- PRINT (zero-dependency fallback) ---------- */
+  @media print{
+    .sidebar-actions, .lang-toggle{display:none !important;}
+    .app{display:block;}
+    .sidebar{position:static;height:auto;border:none;}
+    .main{max-width:100%;padding:20px;}
+    body{background:#fff;color:#161616;}
+    .card, .field-box, .pill-item, .role-tile, .cat-card{background:#f6f6f4;border-color:#ddd;}
+    .card .dots{display:none;}
+  }
 
-  @media(max-width:640px){ .topbar{padding:12px 18px;} .wrap{padding:0 20px;} .hero{padding:50px 0 40px;} }
+  /* ---------- PDF EXPORT (html2canvas capture mode) ---------- */
+  body.pdf-export{background:#ffffff;color:#161616;}
+  body.pdf-export .sidebar-actions, body.pdf-export .lang-toggle, body.pdf-export .card .dots{display:none !important;}
+  body.pdf-export .sidebar{position:static;height:auto;border-color:#e2e2e2;}
+  body.pdf-export .app{display:block;}
+  body.pdf-export .main{max-width:100%;padding:24px;}
+  body.pdf-export .card, body.pdf-export .field-box, body.pdf-export .pill-item, body.pdf-export .role-tile, body.pdf-export .cat-card{
+    background:#f6f6f4;border-color:#e2e2e2;}
+  body.pdf-export .page-title, body.pdf-export .cover-name{color:#161616;}
+  body.pdf-export .page-sub, body.pdf-export .narrative p, body.pdf-export .perf-body p, body.pdf-export .pill-item,
+  body.pdf-export .metric-row .m-lbl, body.pdf-export .suggestion-text, body.pdf-export .field-box .val small,
+  body.pdf-export .footer-card .links{color:#3a3a3a;}
+  body.pdf-export .card .kicker, body.pdf-export .field-box .lbl, body.pdf-export .narrative h4{color:#5c6d00;}
+  body.pdf-export .side-nav{display:none;}
+  body.pdf-export .footer-card img{display:none;}
+  body.pdf-export .footer-wordmark{display:inline-flex !important;}
+
+  @media(max-width:960px){
+    .app{flex-direction:column;}
+    .sidebar{width:100%;height:auto;position:static;flex-direction:row;flex-wrap:wrap;align-items:center;padding:18px 20px;}
+    .sidebar h1{display:none;}
+    .side-nav{display:none;}
+    .sidebar-actions{flex-direction:row;margin-top:0;margin-left:auto;}
+    .main{padding:24px 20px 60px;}
+    .cover-card{flex-direction:column;}
+  }
 </style>
 </head>
 <body>
-
 <div id="app"></div>
 
 <script>
-const STORE_PREFIX = "glofy_pr_review_";
-const FIELDS = ["gloferName","gloferRole","clientName","periodTag","startDate","reportsTo","schedule",
-  "teamText","projectText","hl1","hl2","hl3","hl4","perfText","stat1","stat2","stat3","stat4","hu1","hu2","hu3"];
+/* =========================================================================
+   DATA SOURCE: Google Sheets (published as CSV) — one row per client review.
+   Replace SHEET_CSV_URL below with your sheet's published CSV link:
+   Google Sheets → File → Share → Publish to web → select your tab → CSV → Publish
+   ========================================================================= */
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSLjDMQ2TyBMuEmF7CoG1IhNq0dSfhPVCPC0ShjxUwJ-S3eH92IeSDPwIj_M3DpeS9UGVHb_MytG6kk/pubhtml";
 
-function listClients(){ return Object.keys(localStorage).filter(k=>k.startsWith(STORE_PREFIX)).map(k=>k.slice(STORE_PREFIX.length)); }
-function mostRecentSlug(){
-  const clients = listClients();
-  if(clients.length===0) return null;
-  let best=null, bestTime=-1;
-  clients.forEach(c=>{
-    try{ const d=JSON.parse(localStorage.getItem(STORE_PREFIX+c)); const t=(d&&d.updatedAt)||0; if(t>=bestTime){bestTime=t; best=c;} }catch(e){ if(best===null) best=c; }
-  });
-  return best;
-}
-function currentSlug(){ return new URLSearchParams(location.search).get("client") || mostRecentSlug() || null; }
+const COLUMNS = ["client_slug","client_name","glofer_name","glofer_role","period","start_date","reports_to","schedule",
+  "photo_url","review_type","team_text","project_text","highlight_1","highlight_2","highlight_3","highlight_4",
+  "perf_text","stat_attendance","stat_online","stat_response","stat_escalations","autonomy","flexibility","seniority",
+  "headsup_1","headsup_2","headsup_3","cross_note","cross_role_1","cross_role_1_n","cross_role_2","cross_role_2_n"];
 
-const slug = currentSlug();
-const raw = slug ? localStorage.getItem(STORE_PREFIX+slug) : null;
-const D = raw ? JSON.parse(raw) : null;
-
-if(!D){
-  document.getElementById("app").innerHTML = `
-    <div class="topbar"><div class="brand"><img src="https://raw.githubusercontent.com/comms-glofy/glofy-assets/refs/heads/main/logo-rebrand-glofy.png" alt="Glofy" style="height:22px;display:block;"></div></div>
-    <div class="empty-state">
-      <h1>No review loaded</h1>
-      <p>Open this page from the setup tool so it knows which client to show — or load one from there first.</p>
-      <a class="btn primary" href="setup.html">Go to setup →</a>
-    </div>`;
-} else {
-  try{
-    renderPage(D);
-  }catch(err){
-    console.error(err);
-    document.getElementById("app").innerHTML = `
-      <div class="topbar"><div class="brand"><img src="https://raw.githubusercontent.com/comms-glofy/glofy-assets/refs/heads/main/logo-rebrand-glofy.png" alt="Glofy" style="height:22px;display:block;"></div></div>
-      <div class="empty-state">
-        <h1>Something went wrong rendering this review</h1>
-        <p>${(err && err.message) ? err.message.replace(/[<>]/g,"") : "Unknown error"}</p>
-        <a class="btn primary" href="setup.html">Go to setup →</a>
-      </div>`;
+/* ---------------- Minimal CSV parser (no external library) ---------------- */
+function parseCSV(text){
+  const rows = [];
+  let row = [], field = "", inQuotes = false;
+  for(let i=0;i<text.length;i++){
+    const c = text[i], next = text[i+1];
+    if(inQuotes){
+      if(c === '"' && next === '"'){ field += '"'; i++; }
+      else if(c === '"'){ inQuotes = false; }
+      else field += c;
+    } else {
+      if(c === '"') inQuotes = true;
+      else if(c === ','){ row.push(field); field = ""; }
+      else if(c === '\n'){ row.push(field); rows.push(row); row = []; field = ""; }
+      else if(c === '\r'){ /* skip */ }
+      else field += c;
+    }
   }
+  if(field.length || row.length){ row.push(field); rows.push(row); }
+  return rows.filter(r => r.length>1 || r[0]!=="");
 }
-
-function renderPage(d){
-  const isFirst = d.reviewType === "first";
-  document.getElementById("app").innerHTML = `
-  <div class="topbar">
-    <div class="brand"><img src="https://raw.githubusercontent.com/comms-glofy/glofy-assets/refs/heads/main/logo-rebrand-glofy.png" alt="Glofy" style="height:22px;display:block;"></div>
-    <div class="nav-links">
-      ${isFirst ? '<a href="#team" data-t="navTeam">Context</a>' : ''}
-      <a href="#highlights" data-t="navHl">Highlights</a>
-      <a href="#performance" data-t="navPerf">Performance</a>
-      <a href="#insights" data-t="navIns">Insights</a>
-      <a href="#grow" data-t="navGrow">Grow the team</a>
-    </div>
-    <div class="topbar-actions">
-      <div class="lang-toggle"><button id="enBtn" class="active">EN</button><button id="esBtn">ES</button></div>
-      <button class="btn primary" id="pdfBtn">↓ <span data-t="downloadPdf">Download PDF</span></button>
-    </div>
-  </div>
-
-  <section class="hero">
-    <div class="hero-glow"></div>
-    <div class="wrap hero-grid">
-      <div class="reveal" style="--d:.05s">
-        <div class="eyebrow" data-t="heroEyebrow">Performance Review · ${esc(d.periodTag)}</div>
-        <h1>${esc(d.gloferName)}</h1>
-        <div class="role">${esc(d.gloferRole)} — <span data-t="atLabel">at</span> ${esc(d.clientName)}</div>
-        <div class="meta">
-          <div><span data-t="startDate">Start date</span>: <b>${esc(d.startDate)}</b></div>
-          <div><span data-t="reportsTo">Reports to</span>: <b>${esc(d.reportsTo)}</b></div>
-          <div><span data-t="schedule">Schedule</span>: <b>${esc(d.schedule)}</b></div>
-        </div>
-        <div class="hero-cta">
-          <a class="btn primary" href="#performance" data-t="heroCta1">See how it's going</a>
-          <a class="btn" href="#grow" data-t="heroCta2">Grow this team</a>
-        </div>
-      </div>
-      <div class="device reveal" style="--d:.15s">
-        <div class="float-chip chip1"><span class="dot"></span><span class="num">${esc(d.stat1)}</span> <span data-t="chipStat1">attendance</span></div>
-        <div class="float-chip chip2"><span class="dot"></span><span class="num">${esc(d.stat4)}</span> <span data-t="chipStat4">escalations</span></div>
-        <div class="device-body">
-          <div class="device-screen">
-            <div class="device-top"><span></span><span></span><span></span></div>
-            <div class="device-profile">
-              <div class="device-avatar">${d.photo ? `<img src="${d.photo}">` : initials(d.gloferName)}</div>
-              <div><div class="nm">${esc(d.gloferName)}</div><div class="rl">${esc(d.gloferRole)}</div></div>
-            </div>
-            <div class="device-radar-wrap"><canvas id="heroRadar" height="150"></canvas></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  ${isFirst ? `
-  <section class="section" id="team">
-    <div class="wrap">
-      <div class="eyebrow reveal" data-t="teamEyebrow">Context</div>
-      <h2 class="reveal" data-t="teamH">Team &amp; project</h2>
-      <div class="info-note reveal" style="--d:.03s" data-t="teamNote">Usually covered directly between the client and the Glofer — included here for a first-time review.</div>
-      <div class="narrative reveal" style="--d:.06s">
-        <h4 data-t="teamSubH">Team</h4><p>${esc(d.teamText)}</p>
-        <h4 data-t="projectH">Project context</h4><p>${esc(d.projectText)}</p>
-      </div>
-    </div>
-  </section>` : ``}
-
-  <section class="section" id="highlights">
-    <div class="wrap">
-      <div class="eyebrow reveal" data-t="hlEyebrow">Highlights</div>
-      <h2 class="reveal" data-t="hlH">Worth flagging this period</h2>
-      <div class="bullet-grid">
-        ${[d.hl1,d.hl2,d.hl3,d.hl4].filter(Boolean).map((t,i)=>`
-        <div class="bullet-card reveal" style="--d:${(0.04+i*0.05).toFixed(2)}s"><span class="mark">✓</span><p>${esc(t)}</p></div>`).join("")}
-      </div>
-    </div>
-  </section>
-
-  <section class="section" id="performance">
-    <div class="wrap">
-      <div class="eyebrow reveal" data-t="perfEyebrow">Performance</div>
-      <h2 class="reveal" data-t="perfH2">Performance &amp; attitude</h2>
-      <p class="perf-text reveal" style="--d:.04s">${esc(d.perfText)}</p>
-      <div class="stats">
-        <div class="stat-card reveal" style="--d:.08s"><div class="num">${esc(d.stat1)}</div><div class="lbl" data-t="stat1lbl">On-time attendance</div></div>
-        <div class="stat-card reveal" style="--d:.13s"><div class="num">${esc(d.stat2)}</div><div class="lbl" data-t="stat2lbl">Camera-on / online</div></div>
-        <div class="stat-card reveal" style="--d:.18s"><div class="num">${esc(d.stat3)}</div><div class="lbl" data-t="stat3lbl">Avg. response time</div></div>
-        <div class="stat-card reveal" style="--d:.23s"><div class="num">${esc(d.stat4)}</div><div class="lbl" data-t="stat4lbl">Escalations</div></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" id="insights">
-    <div class="wrap">
-      <div class="eyebrow reveal" data-t="insightsEyebrow">Insights</div>
-      <h2 class="reveal" data-t="insightsH">Assessment snapshot</h2>
-      <div class="insights-frame reveal" style="--d:.1s">
-        <canvas id="radarChart" height="260"></canvas>
-        <div class="cap" data-t="radarCap">Block A criteria — Autonomy · Flexibility · Seniority</div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" id="grow" style="border-bottom:none;">
-    <div class="wrap">
-      <div class="eyebrow reveal" data-t="csEyebrow">Grow the team</div>
-      <h2 class="reveal" data-t="crossH">Looking to grow this team?</h2>
-      <p class="lead reveal" data-t="crossSub">A snapshot of the talent categories most Glofy clients combine with their current resource.</p>
-      <svg class="network-graphic reveal" style="--d:.05s" viewBox="0 0 640 190" aria-hidden="true">
-        <line class="network-line" x1="320" y1="95" x2="90" y2="30"></line>
-        <line class="network-line" x1="320" y1="95" x2="90" y2="160"></line>
-        <line class="network-line" x1="320" y1="95" x2="270" y2="20"></line>
-        <line class="network-line" x1="320" y1="95" x2="380" y2="170"></line>
-        <line class="network-line" x1="320" y1="95" x2="560" y2="55"></line>
-        <g class="network-node"><circle cx="90" cy="30" r="4.5"></circle><text x="90" y="16" text-anchor="middle">AI / ML</text></g>
-        <g class="network-node"><circle cx="90" cy="160" r="4.5" style="animation-delay:.3s"></circle><text x="90" y="178" text-anchor="middle">ERP/CRM</text></g>
-        <g class="network-node"><circle cx="270" cy="20" r="4.5" style="animation-delay:.6s"></circle><text x="270" y="12" text-anchor="middle">Core Tech</text></g>
-        <g class="network-node"><circle cx="380" cy="170" r="4.5" style="animation-delay:.9s"></circle><text x="380" y="188" text-anchor="middle">No-Dev</text></g>
-        <g class="network-node"><circle cx="560" cy="55" r="4.5" style="animation-delay:1.2s"></circle><text x="560" y="41" text-anchor="middle">Sales</text></g>
-        <g><circle cx="320" cy="95" r="20" fill="var(--lime)"></circle><text x="320" y="99" text-anchor="middle" font-family="Montserrat" font-weight="800" font-size="10" fill="#1c1c1c">${esc(d.clientName.slice(0,3).toUpperCase())}</text></g>
-      </svg>
-      <div class="talent-grid">
-        <div class="talent-card reveal" style="--d:.04s"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect></svg></div><div class="cat" data-t="catHighSpec">High Specialization</div><div class="blurb" data-t="catHighSpecBlurb">Ship AI-native product faster</div><ul><li>AI Engineer</li><li>ML Engineer</li><li>Python Engineer</li><li>DevOps Engineer</li></ul></div>
-        <div class="talent-card reveal" style="--d:.08s"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"></ellipse><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5"></path></svg></div><div class="cat" data-t="catErp">ERP / CRM / Enterprise</div><div class="blurb" data-t="catErpBlurb">Keep core systems running lean</div><ul><li>SAP Consultant</li><li>Salesforce Developer</li><li>Oracle Developer</li></ul></div>
-        <div class="talent-card reveal" style="--d:.12s"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></div><div class="cat" data-t="catCore">Core Tech</div><div class="blurb" data-t="catCoreBlurb">Add hands without headcount risk</div><ul><li>Full Stack Developer</li><li>Back-End Developer</li><li>QA Automation</li></ul></div>
-        <div class="talent-card reveal" style="--d:.16s"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle></svg></div><div class="cat" data-t="catNoDev">Digital No-Dev</div><div class="blurb" data-t="catNoDevBlurb">Launch campaigns without in-house hires</div><ul><li>UX/UI Designer</li><li>Growth Marketer</li><li>Content Creator</li></ul></div>
-        <div class="talent-card reveal" style="--d:.2s"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg></div><div class="cat" data-t="catSales">Sales &amp; Revenue</div><div class="blurb" data-t="catSalesBlurb">Close more pipeline this quarter</div><ul><li>SDR / BDR</li><li>Account Executive</li><li>CSM</li></ul></div>
-      </div>
-    </div>
-  </section>
-
-  ${(d.hu1||d.hu2||d.hu3) ? `
-  <section class="section" id="alignment">
-    <div class="wrap">
-      <div class="eyebrow reveal" data-t="huEyebrow">Alignment</div>
-      <h2 class="reveal" data-t="huH">Heads-up &amp; alignment</h2>
-      <div class="bullet-grid">
-        ${[d.hu1,d.hu2,d.hu3].filter(Boolean).map((t,i)=>`
-        <div class="bullet-card reveal" style="--d:${(0.04+i*0.05).toFixed(2)}s"><span class="mark">!</span><p>${esc(t)}</p></div>`).join("")}
-      </div>
-    </div>
-  </section>` : ``}
-
-  <section class="cta-section" id="contact">
-    <div class="hero-glow"></div>
-    <div class="wrap">
-      <h2 class="reveal" data-t="ctaH">Explore the full talent catalog</h2>
-      <p class="reveal" style="--d:.05s" data-t="ctaP">Rates, seniority levels and availability for every role.</p>
-      <div class="cta-buttons reveal" style="--d:.1s">
-        <a class="btn primary" href="https://glofy.co/scopes" target="_blank" data-t="ctaBtn1">View glofy.co/scopes →</a>
-        <a class="btn" href="mailto:hello@glofy.co" data-t="ctaBtn2">hello@glofy.co</a>
-      </div>
-    </div>
-  </section>
-
-  <div class="wrap footer-bar">
-    <img src="https://raw.githubusercontent.com/comms-glofy/glofy-assets/refs/heads/main/logo-rebrand-glofy.png" alt="Glofy">
-    <span class="footer-wordmark">GLO<span>FY</span></span>
-    <div class="contact" data-t="footerTag">Verified AI talent for global teams.</div>
-  </div>
-  `;
-  wireInteractivity(d);
+function csvToRecords(text){
+  const rows = parseCSV(text);
+  if(rows.length < 1) return [];
+  const header = rows[0].map(h=>h.trim());
+  return rows.slice(1).filter(r=>r.some(c=>c && c.trim())).map(r=>{
+    const rec = {};
+    header.forEach((h,i)=>{ rec[h] = (r[i]||"").trim(); });
+    return rec;
+  });
 }
 
 function esc(s){ return (s||"").toString().replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function initials(name){ return (name||"").trim().split(/\s+/).slice(0,2).map(w=>w[0]||"").join("").toUpperCase() || "GL"; }
+function slugify(s){ return (s||"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,""); }
 
-/* ---------------- i18n ---------------- */
+let ALL_RECORDS = [];
+let currentLang = "es";
+
+const DEFAULT_PHOTO = "https://raw.githubusercontent.com/comms-glofy/pr/refs/heads/main/glofers.png";
+function resolvePhotoUrl(d){ return d.photo_url || DEFAULT_PHOTO; }
+
+const CATALOG = [
+  {key:"high", img:"https://raw.githubusercontent.com/comms-glofy/scope/refs/heads/main/high.jpg",
+    en:"High Specialization", es:"Alta especialización", roles:["AI Engineer","ML Engineer","Python Engineer","Golang Engineer","Ruby Developer","DevOps Engineer"]},
+  {key:"enterprise", img:"https://raw.githubusercontent.com/comms-glofy/scope/refs/heads/main/enterprise.jpg",
+    en:"ERP / CRM / Enterprise", es:"ERP / CRM / Enterprise", roles:["SAP Consultant","Salesforce Developer","Oracle Developer","Dynamics 365 Developer","Odoo Developer"]},
+  {key:"core-tech", img:"https://raw.githubusercontent.com/comms-glofy/scope/refs/heads/main/core-tech.jpg",
+    en:"Core Tech", es:"Core Tech", roles:["Full Stack Developer","Back-End Developer","Front-End Developer","Mobile Developer","QA Automation Engineer"]},
+  {key:"nodev", img:"https://raw.githubusercontent.com/comms-glofy/scope/refs/heads/main/nodev.jpg",
+    en:"Digital No-Dev", es:"Digital No-Dev", roles:["UX/UI Designer","Growth Marketer","Data Analytics","Graphic Designer","Content Creator"]},
+  {key:"sales", img:null,
+    en:"Sales &amp; Revenue", es:"Sales &amp; Revenue", roles:["Sales Engineer / Solutions Consultant","SDR","BDR","Account Executive","Account Manager","Customer Success Manager","Sales Operations / RevOps"]}
+];
+
 const I18N = {
-  en:{ navTeam:"Context", navHl:"Highlights", navPerf:"Performance", navIns:"Insights", navGrow:"Grow the team",
-    downloadPdf:"Download PDF", heroEyebrow:"Performance Review ·", atLabel:"at",
-    startDate:"Start date", reportsTo:"Reports to", schedule:"Schedule",
-    chipStat1:"attendance", chipStat4:"escalations", heroCta1:"See how it's going", heroCta2:"Grow this team",
-    teamEyebrow:"Context", teamH:"Team & project", teamNote:"Usually covered directly between the client and the Glofer — included here for a first-time review.",
-    teamSubH:"Team", projectH:"Project context",
-    hlEyebrow:"Highlights", hlH:"Worth flagging this period",
-    perfEyebrow:"Performance", perfH2:"Performance & attitude",
-    stat1lbl:"On-time attendance", stat2lbl:"Camera-on / online", stat3lbl:"Avg. response time", stat4lbl:"Escalations",
-    insightsEyebrow:"Insights", insightsH:"Assessment snapshot", radarCap:"Block A criteria — Autonomy · Flexibility · Seniority",
-    csEyebrow:"Grow the team", crossH:"Looking to grow this team?", crossSub:"A snapshot of the talent categories most Glofy clients combine with their current resource.",
-    catHighSpec:"High Specialization", catErp:"ERP / CRM / Enterprise", catCore:"Core Tech", catNoDev:"Digital No-Dev", catSales:"Sales & Revenue",
-    catHighSpecBlurb:"Ship AI-native product faster", catErpBlurb:"Keep core systems running lean",
-    catCoreBlurb:"Add hands without headcount risk", catNoDevBlurb:"Launch campaigns without in-house hires", catSalesBlurb:"Close more pipeline this quarter",
-    huEyebrow:"Alignment", huH:"Heads-up & alignment",
-    ctaH:"Explore the full talent catalog", ctaP:"Rates, seniority levels and availability for every role.",
-    ctaBtn1:"View glofy.co/scopes →", ctaBtn2:"hello@glofy.co", footerTag:"Verified AI talent for global teams.",
-    pdfError:"Could not generate the PDF."
+  es:{ title:"Informe de\nPerformance Review", navDatos:"Datos generales", navTeam:"Team and Project", navHl:"Highlights",
+    navPerf:"Performance and Attitude", navHu:"Alineación con el cliente (Heads-up)", navCross:"Hacer crecer el equipo (Cross-sell)", navContact:"Contacto",
+    downloadPdf:"Descargar PDF", printPdf:"Imprimir / Guardar como PDF",
+    pageTitle:"PERFORMANCE REVIEW",
+    pageSub:"Reunión mensual (luego trimestral) entre el comercial de Glofy y el cliente, para repasar cómo viene el recurso asignado. Se apoya en el informe completo que envía People, pero no se muestra el informe completo.",
+    datosK:"Datos generales", rolLbl:"Rol", clienteLbl:"Cliente", periodoLbl:"Período cubierto", fechaLbl:"Fecha de inicio",
+    reportaLbl:"Reporta", modalidadLbl:"Modalidad",
+    teamK:"Team and Project", equipoLbl:"Equipo", proyectoLbl:"Proyecto",
+    hlK:"Highlights",
+    perfK:"Performance and Attitude", metricasLbl:"Métricas",
+    m1:"Puntualidad", m2:"Cámara / online", m3:"Tiempo de respuesta promedio", m4:"Escalamientos",
+    huK:"Alineación con el cliente (Heads-up)",
+    crossK:"Hacer crecer el equipo (Cross-sell)", sugerenciaH:"Sugerencia de Glofy para nuevo talento",
+    catalogoCta:"Catálogo completo y tarifas en glofy.co/scopes",
+    contactoK:"Contacto",
+    emptyH:"No hay ningún informe cargado", emptyP:"Verificá que la hoja de Google Sheets esté publicada y que el enlace esté bien configurado en el código, o que el cliente seleccionado exista en la planilla.",
+    pdfError:"No se pudo generar el PDF. Probá con el botón de Imprimir / Guardar como PDF."
   },
-  es:{ navTeam:"Contexto", navHl:"Highlights", navPerf:"Performance", navIns:"Insights", navGrow:"Crecer el equipo",
-    downloadPdf:"Descargar PDF", heroEyebrow:"Performance Review ·", atLabel:"en",
-    startDate:"Fecha de inicio", reportsTo:"Reporta a", schedule:"Modalidad",
-    chipStat1:"puntualidad", chipStat4:"escalamientos", heroCta1:"Ver cómo viene", heroCta2:"Crecer el equipo",
-    teamEyebrow:"Contexto", teamH:"Equipo y proyecto", teamNote:"Normalmente se ve directo entre el cliente y el Glofer — se incluye para la primera review.",
-    teamSubH:"Equipo", projectH:"Contexto del proyecto",
-    hlEyebrow:"Highlights", hlH:"Para destacar en este período",
-    perfEyebrow:"Performance", perfH2:"Desempeño y actitud",
-    stat1lbl:"Puntualidad", stat2lbl:"Cámara / online", stat3lbl:"Tiempo de respuesta prom.", stat4lbl:"Escalamientos",
-    insightsEyebrow:"Insights", insightsH:"Panorama del assessment", radarCap:"Criterios Bloque A — Autonomía · Flexibilidad · Seniority",
-    csEyebrow:"Crecer el equipo", crossH:"¿Buscás hacer crecer este equipo?", crossSub:"Categorías de talento que más suelen sumar los clientes de Glofy junto a su recurso actual.",
-    catHighSpec:"Alta especialización", catErp:"ERP / CRM / Enterprise", catCore:"Core Tech", catNoDev:"Digital No-Dev", catSales:"Sales & Revenue",
-    catHighSpecBlurb:"Acelerá producto AI-native", catErpBlurb:"Mantené los sistemas core sin fricción",
-    catCoreBlurb:"Sumá manos sin riesgo de headcount", catNoDevBlurb:"Lanzá campañas sin contratar in-house", catSalesBlurb:"Cerrá más pipeline este trimestre",
-    huEyebrow:"Alineación", huH:"Puntos a alinear con el cliente",
-    ctaH:"Explorá el catálogo completo de talento", ctaP:"Tarifas, niveles de seniority y disponibilidad para cada rol.",
-    ctaBtn1:"Ver glofy.co/scopes →", ctaBtn2:"hello@glofy.co", footerTag:"Verified AI talent for global teams.",
-    pdfError:"No se pudo generar el PDF."
+  en:{ title:"Performance Review\nReport", navDatos:"General info", navTeam:"Team and Project", navHl:"Highlights",
+    navPerf:"Performance and Attitude", navHu:"Client alignment (Heads-up)", navCross:"Grow the team (Cross-sell)", navContact:"Contact",
+    downloadPdf:"Download PDF", printPdf:"Print / Save as PDF",
+    pageTitle:"PERFORMANCE REVIEW",
+    pageSub:"Monthly (then quarterly) meeting between the Glofy commercial and the client, to review how the assigned resource is doing. Draws on the full report People sends, but the full report is never shown.",
+    datosK:"General info", rolLbl:"Role", clienteLbl:"Client", periodoLbl:"Period covered", fechaLbl:"Start date",
+    reportaLbl:"Reports to", modalidadLbl:"Schedule",
+    teamK:"Team and Project", equipoLbl:"Team", proyectoLbl:"Project",
+    hlK:"Highlights",
+    perfK:"Performance and Attitude", metricasLbl:"Metrics",
+    m1:"On-time attendance", m2:"Camera-on / online", m3:"Avg. response time", m4:"Escalations",
+    huK:"Client alignment (Heads-up)",
+    crossK:"Grow the team (Cross-sell)", sugerenciaH:"Glofy's suggestion for new talent",
+    catalogoCta:"Full catalog and rates at glofy.co/scopes",
+    contactoK:"Contact",
+    emptyH:"No review loaded", emptyP:"Check that the Google Sheet is published and the link is set correctly in the code, or that the selected client exists in the sheet.",
+    pdfError:"Could not generate the PDF. Try the Print / Save as PDF button instead."
   }
 };
-let currentLang = "en";
-function applyLang(lang){
-  currentLang = lang;
-  document.querySelectorAll("[data-t]").forEach(el=>{ const k=el.getAttribute("data-t"); if(I18N[lang][k]!==undefined) el.textContent = I18N[lang][k]; });
-  document.getElementById("enBtn")?.classList.toggle("active", lang==="en");
-  document.getElementById("esBtn")?.classList.toggle("active", lang==="es");
-  document.documentElement.lang = lang;
-  renderRadars();
+
+function currentSlug(){ return new URLSearchParams(location.search).get("client"); }
+
+async function boot(){
+  renderShell(null, []);
+  if(SHEET_CSV_URL.indexOf("PASTE_YOUR") === 0){
+    renderShell(null, [], "config");
+    return;
+  }
+  try{
+    const res = await fetch(SHEET_CSV_URL, {cache:"no-store"});
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    const text = await res.text();
+    ALL_RECORDS = csvToRecords(text);
+  }catch(err){
+    console.error("Could not load sheet", err);
+    renderShell(null, [], "fetch");
+    return;
+  }
+  const slug = currentSlug() || (ALL_RECORDS[0] && ALL_RECORDS[0].client_slug);
+  const record = ALL_RECORDS.find(r => r.client_slug === slug) || ALL_RECORDS[0] || null;
+  renderShell(record, ALL_RECORDS);
 }
 
-function wireInteractivity(d){
-  document.getElementById("enBtn").onclick = ()=>applyLang("en");
-  document.getElementById("esBtn").onclick = ()=>applyLang("es");
-  applyLang("en");
+function renderShell(record, records, errorType){
+  const app = document.getElementById("app");
+  if(!record){
+    const t = I18N[currentLang];
+    let msg = t.emptyP;
+    if(errorType === "config") msg = currentLang==="es"
+      ? "Todavía no se configuró la hoja de Google Sheets en el código (SHEET_CSV_URL)."
+      : "The Google Sheet hasn't been configured yet in the code (SHEET_CSV_URL).";
+    if(errorType === "fetch") msg = currentLang==="es"
+      ? "No se pudo leer la hoja de Google Sheets. Confirmá que esté publicada (File → Share → Publish to web → CSV)."
+      : "Could not read the Google Sheet. Confirm it's published (File → Share → Publish to web → CSV).";
+    app.innerHTML = `
+      <div class="app">
+        <div class="main" style="max-width:100%;">
+          <div class="empty-state">
+            <h1>${t.emptyH}</h1>
+            <p>${msg}</p>
+          </div>
+        </div>
+      </div>`;
+    return;
+  }
+  renderPage(record, records);
+}
 
-  const io = new IntersectionObserver((entries)=>{ entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add("in-view"); }); }, {threshold:0.15});
-  document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
+function renderPage(d, records){
+  const t = I18N[currentLang];
+  const isFirst = d.review_type === "first";
+  const stats = [
+    [d.stat_attendance, t.m1], [d.stat_online, t.m2], [d.stat_response, t.m3], [d.stat_escalations, t.m4]
+  ];
+  const autonomy = Number(d.autonomy)||0, flex = Number(d.flexibility)||0, seniority = Number(d.seniority)||0;
 
-  window._reviewData = d;
-  renderRadars();
+  const clientOptions = records.map(r=>`<option value="${esc(r.client_slug)}" ${r.client_slug===d.client_slug?"selected":""}>${esc(r.client_name||r.client_slug)}</option>`).join("");
+
+  const highlights = [d.highlight_1,d.highlight_2,d.highlight_3,d.highlight_4].filter(Boolean);
+  const headsups = [d.headsup_1,d.headsup_2,d.headsup_3].filter(Boolean);
+  const roleTiles = [];
+  if(d.cross_role_1) roleTiles.push([d.cross_role_1_n||"+1", d.cross_role_1]);
+  if(d.cross_role_2) roleTiles.push([d.cross_role_2_n||"+1", d.cross_role_2]);
+
+  document.getElementById("app").innerHTML = `
+  <div class="app">
+    <aside class="sidebar">
+      <img class="logo" src="https://raw.githubusercontent.com/comms-glofy/glofy-assets/refs/heads/main/logo-rebrand-glofy.png" alt="Glofy">
+      <h1>${t.title.split("\n").map(esc).join("<br>")}</h1>
+      <nav class="side-nav">
+        <a href="#datos" data-sec="datos" class="active">${t.navDatos}</a>
+        <a href="#team" data-sec="team" class="${isFirst?"":"hidden-link"}">${t.navTeam}</a>
+        <a href="#highlights" data-sec="highlights">${t.navHl}</a>
+        <a href="#performance" data-sec="performance">${t.navPerf}</a>
+        <a href="#alineacion" data-sec="alineacion" class="${headsups.length?"":"hidden-link"}">${t.navHu}</a>
+        <a href="#cross" data-sec="cross">${t.navCross}</a>
+        <a href="#contacto" data-sec="contacto">${t.navContact}</a>
+      </nav>
+      <div class="sidebar-actions">
+        <label class="mini">${t.clienteLbl}</label>
+        <select id="clientSelect">${clientOptions}</select>
+        <div class="lang-toggle" style="margin-top:10px;"><button id="esBtn" class="${currentLang==="es"?"active":""}">ES</button><button id="enBtn" class="${currentLang==="en"?"active":""}">EN</button></div>
+        <button class="btn primary" id="pdfBtn" style="margin-top:8px;">↓ <span id="pdfBtnLabel">${t.downloadPdf}</span></button>
+        <button class="btn ghost" id="printBtn" style="font-size:11px;">${t.printPdf}</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="page-title">${t.pageTitle}</div>
+      <p class="page-sub">${t.pageSub}</p>
+
+      <section class="card cover-card" id="datos">
+        <div class="cover-photo" id="coverPhotoWrap">
+          <img id="coverPhotoImg" src="${esc(resolvePhotoUrl(d))}" crossorigin="anonymous" onerror="this.style.display='none'; document.getElementById('coverPhotoFallback').style.display='flex';">
+          <div class="ph-fallback" id="coverPhotoFallback" style="display:none;">${initials(d.glofer_name)}</div>
+        </div>
+        <div class="cover-right">
+          <div class="kicker">${t.datosK}</div>
+          <div class="cover-name">${esc(d.glofer_name)}</div>
+          <div class="field-grid">
+            <div class="field-box"><div class="lbl">${t.rolLbl}</div><div class="val">${esc(d.glofer_role)}</div></div>
+            <div class="field-box"><div class="lbl">${t.fechaLbl}</div><div class="val">${esc(d.start_date)}</div></div>
+            <div class="field-box"><div class="lbl">${t.clienteLbl}</div><div class="val">${esc(d.client_name)}</div></div>
+            <div class="field-box"><div class="lbl">${t.reportaLbl}</div><div class="val">${esc(d.reports_to)}</div></div>
+            <div class="field-box"><div class="lbl">${t.periodoLbl}</div><div class="val">${esc(d.period)}</div></div>
+            <div class="field-box"><div class="lbl">${t.modalidadLbl}</div><div class="val">${esc(d.schedule)}</div></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="masonry">
+        <section class="card ${headsups.length?"":"section-hidden"}" id="alineacion">
+          <div class="dots">⋮</div>
+          <div class="kicker">${t.huK}</div>
+          <div class="pill-list">${headsups.map(h=>`<div class="pill-item">${esc(h)}</div>`).join("")}</div>
+        </section>
+
+        <section class="card" id="highlights">
+          <div class="dots">⋮</div>
+          <div class="kicker">${t.hlK}</div>
+          <div class="pill-list">${highlights.map(h=>`<div class="pill-item">${esc(h)}</div>`).join("")}</div>
+        </section>
+
+        <section class="card perf-body" id="performance">
+          <div class="dots">⋮</div>
+          <div class="kicker">${t.perfK}</div>
+          <p>${esc(d.perf_text)}</p>
+          <div class="kicker" style="margin-top:18px;">${t.metricasLbl}</div>
+          ${stats.map(([val,lbl])=>`
+          <div class="metric-row">
+            <div class="m-lbl">${lbl}</div>
+            <div class="metric-track"><i data-target="${escPct(val)}"></i></div>
+            <div class="m-val">${esc(val)}</div>
+          </div>`).join("")}
+        </section>
+
+        <section class="card narrative ${isFirst?"":"section-hidden"}" id="team">
+          <div class="dots">⋮</div>
+          <div class="kicker">${t.teamK}</div>
+          <h4>${t.equipoLbl}</h4><p>${esc(d.team_text)}</p>
+          <h4>${t.proyectoLbl}</h4><p>${esc(d.project_text)}</p>
+        </section>
+      </div>
+
+      <section class="card" id="cross">
+        <div class="dots">⋮</div>
+        <div class="kicker">${t.crossK}</div>
+        ${d.cross_note ? `
+        <div class="suggestion-heading">${t.sugerenciaH}</div>
+        <p class="suggestion-text">${esc(d.cross_note)}</p>
+        ${roleTiles.length ? `<div class="role-tiles">${roleTiles.map(([n,lbl],i)=>`${i>0?'<div class="tile-divider"></div>':''}<div class="role-tile"><div class="n">${esc(n)}</div><div class="lbl">${esc(lbl)}</div></div>`).join("")}</div>` : ``}
+        ` : ``}
+
+        <div class="catalog-grid" style="margin-top:${d.cross_note?'26px':'6px'};">
+          ${CATALOG.map(cat=>`
+          <div class="cat-card ${cat.img?"":"no-photo"}">
+            ${cat.img ? `<div class="cat-photo"><img src="${cat.img}" crossorigin="anonymous" onerror="this.parentElement.style.display='none'"><div class="cat-title">${cat[currentLang]}</div></div>` : `<div class="cat-title">${cat[currentLang]}</div>`}
+            <div class="cat-tags">${cat.roles.map(r=>`<span class="cat-tag">${esc(r)}</span>`).join("")}</div>
+          </div>`).join("")}
+        </div>
+        <a class="cta-btn" href="https://glofy.co/scopes" target="_blank">${t.catalogoCta}</a>
+      </section>
+
+      <section class="card footer-card" id="contacto">
+        <div>
+          <div class="kicker">${t.contactoK}</div>
+          <div class="links"><a href="mailto:hello@glofy.co">hello@glofy.co</a> &nbsp;·&nbsp; <a href="https://glofy.co" target="_blank">glofy.co</a></div>
+        </div>
+        <img src="https://raw.githubusercontent.com/comms-glofy/glofy-assets/refs/heads/main/logo-rebrand-glofy.png" alt="Glofy">
+        <span class="footer-wordmark">GLO<span>FY</span></span>
+      </section>
+    </main>
+  </div>`;
+
+  wireInteractivity(d, records);
+  animateMetrics();
+  renderRadarless(autonomy, flex, seniority); // placeholder no-op kept for future use
+}
+
+function escPct(v){
+  const n = parseFloat(String(v).replace("%","").replace("<","").replace("h",""));
+  if(isNaN(n)) return 60;
+  if(String(v).includes("%")) return Math.max(4, Math.min(100, n));
+  return 70; // non-numeric metrics (e.g. "Diaria", "<2h") show a fixed indicative bar
+}
+function animateMetrics(){
+  document.querySelectorAll(".metric-track i").forEach(el=>{
+    requestAnimationFrame(()=>{ el.style.width = el.dataset.target + "%"; });
+  });
+}
+function renderRadarless(){ /* no-op — this design uses metric bars, not a radar, per the approved PDF */ }
+
+function wireInteractivity(d, records){
+  document.getElementById("esBtn").onclick = ()=>{ currentLang="es"; renderPage(d, records); };
+  document.getElementById("enBtn").onclick = ()=>{ currentLang="en"; renderPage(d, records); };
+  document.getElementById("clientSelect").onchange = (e)=>{
+    const url = new URL(location); url.searchParams.set("client", e.target.value); history.replaceState(null,"",url);
+    const rec = records.find(r=>r.client_slug===e.target.value);
+    if(rec) renderPage(rec, records);
+  };
+
+  const links = document.querySelectorAll(".side-nav a:not(.hidden-link)");
+  const sections = Array.from(links).map(a=>document.getElementById(a.dataset.sec)).filter(Boolean);
+  const spy = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        links.forEach(l=>l.classList.remove("active"));
+        const match = document.querySelector(`.side-nav a[data-sec="${entry.target.id}"]`);
+        if(match) match.classList.add("active");
+      }
+    });
+  }, {rootMargin:"-20% 0px -70% 0px"});
+  sections.forEach(s=>spy.observe(s));
+
+  document.getElementById("printBtn").onclick = ()=>window.print();
 
   document.getElementById("pdfBtn").onclick = async ()=>{
     const btn = document.getElementById("pdfBtn");
     btn.disabled = true;
     document.body.classList.add("pdf-export");
-    renderRadars("pdf");
     await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
     try{
-      const canvas = await html2canvas(document.body, { backgroundColor:"#ffffff", scale:2, useCORS:true });
+      const canvas = await html2canvas(document.querySelector(".app"), { backgroundColor:"#ffffff", scale:2, useCORS:true });
       const imgData = canvas.toDataURL("image/jpeg", 0.95);
       const { jsPDF } = window.jspdf;
       const pdfWidthPt = 800;
       const pdfHeightPt = canvas.height * (pdfWidthPt / canvas.width);
       const pdf = new jsPDF({ unit:"pt", format:[pdfWidthPt, pdfHeightPt] });
       pdf.addImage(imgData, "JPEG", 0, 0, pdfWidthPt, pdfHeightPt);
-      pdf.save(`glofy-performance-review-${slug}.pdf`);
+      pdf.save(`glofy-performance-review-${slugify(d.client_name)||d.client_slug}.pdf`);
     }catch(err){
-      console.error(err); alert(I18N[currentLang].pdfError);
+      console.error(err);
+      alert(I18N[currentLang].pdfError);
     }finally{
       document.body.classList.remove("pdf-export");
-      renderRadars("screen");
       btn.disabled = false;
     }
   };
 }
 
-let heroChart, mainChart;
-function chartPalette(mode){
-  return mode === "pdf"
-    ? { grid:"rgba(20,20,20,0.18)", angle:"rgba(20,20,20,0.18)", label:"#161616", bg:"rgba(92,109,0,0.20)", border:"#5c6d00", point:"#5c6d00" }
-    : { grid:"rgba(225,225,225,0.16)", angle:"rgba(225,225,225,0.16)", label:"#ededed", bg:"rgba(206,255,0,0.22)", border:"#ceff00", point:"#ceff00" };
-}
-function renderRadars(mode){
-  const d = window._reviewData; if(!d) return;
-  const pal = chartPalette(mode || "screen");
-  const labels = [I18N[currentLang].catHighSpec ? ["Autonomy","Flexibility","Seniority"] : null][0] ||
-    (currentLang==="es" ? ["Autonomía","Flexibilidad","Seniority"] : ["Autonomy","Flexibility","Seniority"]);
-  const data = [Number(d.autonomy)||5, Number(d.flex)||5, Number(d.seniority)||4];
-  [{id:"radarChart", ref:"mainChart"}, {id:"heroRadar", ref:"heroChart"}].forEach(({id})=>{
-    const ctx = document.getElementById(id); if(!ctx) return;
-    const existing = id==="radarChart" ? mainChart : heroChart;
-    if(existing) existing.destroy();
-    const inst = new Chart(ctx, {
-      type:"radar",
-      data:{ labels, datasets:[{ data, backgroundColor:pal.bg, borderColor:pal.border, borderWidth:2, pointBackgroundColor:pal.point, pointRadius:id==="radarChart"?4:2 }]},
-      options:{ responsive:true, animation: mode==="pdf" ? false : {duration:900, easing:"easeOutQuart"}, plugins:{legend:{display:false}},
-        scales:{ r:{ min:0, max:5, ticks:{display:false}, grid:{color:pal.grid}, angleLines:{color:pal.angle},
-          pointLabels:{display:id==="radarChart", color:pal.label, font:{family:"Montserrat", size:12, weight:600}} } } }
-    });
-    if(id==="radarChart") mainChart = inst; else heroChart = inst;
-  });
-}
+boot();
 </script>
 </body>
 </html>
