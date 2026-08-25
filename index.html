@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Glofy — Informe de Performance Review</title>
+<title>Glofy | Performance Review</title>
 <link rel="icon" href="https://raw.githubusercontent.com/comms-glofy/glofy-assets/refs/heads/main/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -13,11 +13,11 @@
   :root{ --dark:#1c1c1c; --dark2:#2a2a2a; --dark3:#242424; --lime:#ceff00; --gray:#e1e1e1; --off:#ededed;
     --line:rgba(225,225,225,0.12); --muted:rgba(237,237,237,0.55); --sidebar-w:270px; }
   *{box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
   body{margin:0;background:var(--dark);color:var(--off);font-family:'Montserrat',sans-serif;-webkit-font-smoothing:antialiased;}
   ::selection{background:var(--lime);color:var(--dark);}
   a{color:inherit;text-decoration:none;}
   button{font-family:inherit;cursor:pointer;}
+  input,select,textarea{font-family:inherit;}
   @media (prefers-reduced-motion: reduce){ *{animation:none !important;transition:none !important;} }
 
   /* ---------- LAYOUT ---------- */
@@ -26,79 +26,100 @@
     width:var(--sidebar-w);flex:none;position:sticky;top:0;height:100vh;overflow-y:auto;
     padding:32px 26px;border-right:1px solid var(--line);display:flex;flex-direction:column;
   }
-  .sidebar img.logo{height:22px;display:block;margin-bottom:26px;}
+  .sidebar img.logo{height:22px;width:auto;display:block;margin-bottom:26px;align-self:flex-start;}
   .sidebar h1{font-size:20px;font-weight:800;line-height:1.25;margin:0 0 30px;}
   .side-nav{display:flex;flex-direction:column;gap:15px;margin-bottom:auto;}
-  .side-nav a{font-size:13.5px;color:var(--muted);font-weight:500;transition:.15s;}
+  .side-nav a{font-size:13.5px;color:var(--muted);font-weight:500;transition:.15s;align-self:flex-start;}
   .side-nav a:hover{color:var(--gray);}
   .side-nav a.active{color:#fff;font-weight:700;}
   .side-nav a.hidden-link{display:none;}
-  .sidebar-actions{display:flex;flex-direction:column;gap:8px;margin-top:26px;}
+  .sidebar-actions{display:flex;flex-direction:column;gap:8px;margin-top:26px;overflow:hidden;max-height:600px;transition:max-height .35s ease, opacity .3s ease, margin-top .35s ease;opacity:1;}
+  .sidebar-actions.collapsed{max-height:0;opacity:0;margin-top:0;pointer-events:none;}
+  .collapse-toggle{
+    display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:22px;
+    background:transparent;border:1px dashed var(--line);color:var(--muted);border-radius:8px;padding:7px;
+    font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+  }
+  .collapse-toggle:hover{border-color:var(--lime);color:var(--lime);}
+  .collapse-toggle .chev{transition:transform .3s ease;display:inline-block;}
+  .collapse-toggle.collapsed .chev{transform:rotate(180deg);}
   .main{flex:1;min-width:0;padding:40px 44px 90px;max-width:1180px;}
 
   .btn{border:1px solid var(--line);background:var(--dark2);color:var(--off);border-radius:999px;padding:10px 16px;
-    font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:.15s ease;}
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:.15s ease;align-self:flex-start;width:100%;}
   .btn:hover{border-color:var(--lime);}
   .btn.primary{background:var(--lime);color:var(--dark);border-color:var(--lime);}
   .btn.primary:hover{filter:brightness(1.08);}
-  .btn.ghost{background:transparent;}
   .btn:disabled{opacity:.5;cursor:progress;}
   .lang-toggle{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;align-self:flex-start;}
   .lang-toggle button{background:transparent;border:none;color:var(--muted);padding:8px 12px;font-size:11px;font-weight:700;}
   .lang-toggle button.active{background:var(--lime);color:var(--dark);}
   select#clientSelect{width:100%;appearance:none;background:var(--dark2);color:var(--off);border:1px solid var(--line);
     border-radius:8px;padding:9px 10px;font-size:12px;font-weight:600;margin-top:6px;}
-  .sidebar label.mini{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;}
+  .sidebar label.mini{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;align-self:flex-start;}
 
-  .page-title{font-size:38px;font-weight:900;letter-spacing:-.02em;line-height:1.05;margin:0 0 10px;text-transform:uppercase;}
-  .page-sub{font-size:14px;color:var(--gray);opacity:.85;line-height:1.6;max-width:680px;margin:0 0 30px;}
+  .page-title{font-size:38px;font-weight:900;letter-spacing:-.02em;line-height:1.05;margin:0 0 28px;text-transform:uppercase;}
 
   /* ---------- CARD ---------- */
   .card{position:relative;background:var(--dark3);border:1px solid var(--line);border-radius:22px;padding:26px 26px 24px;margin-bottom:18px;}
   .card .kicker{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:14px;}
-  .card .dots{position:absolute;top:22px;right:22px;color:var(--muted);font-size:16px;letter-spacing:1px;opacity:.6;}
+
+  /* ---------- shared input styling (visibly editable) ---------- */
+  .in{background:transparent;border:none;border-bottom:1px dashed rgba(206,255,0,0.4);color:var(--off);font-family:inherit;width:100%;padding:2px 0 3px;font-weight:700;font-size:inherit;cursor:text;transition:.15s ease;}
+  .in:hover{background:rgba(206,255,0,0.06);}
+  .in:focus{outline:none;background:rgba(206,255,0,0.1);border-bottom:1px solid var(--lime);}
+  .in::placeholder{color:var(--muted);font-weight:500;}
+  select.in{appearance:none;cursor:pointer;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+    background-position:calc(100% - 4px) 55%,calc(100% - 0px) 55%;background-size:5px 5px;background-repeat:no-repeat;padding-right:14px;}
+  input[type=date].in, input[type=month].in{color-scheme:dark;}
+  textarea.in{border:1px dashed rgba(206,255,0,0.3);border-radius:8px;padding:8px 10px;}
+  textarea.in:hover{background:rgba(206,255,0,0.05);}
+  textarea.in:focus{border:1px solid var(--lime);background:rgba(206,255,0,0.08);}
 
   /* ---------- DATOS GENERALES ---------- */
   .cover-card{display:flex;gap:24px;align-items:stretch;}
-  .cover-photo{width:220px;flex:none;border-radius:16px;overflow:hidden;background:var(--dark2);position:relative;}
+  .cover-photo{width:220px;flex:none;border-radius:16px;overflow:hidden;background:var(--dark2);}
   .cover-photo img{width:100%;height:100%;object-fit:cover;display:block;min-height:220px;}
-  .cover-photo .ph-fallback{width:100%;height:100%;min-height:220px;display:flex;align-items:center;justify-content:center;
-    font-size:42px;font-weight:800;color:var(--lime);}
-  .cover-right{flex:1;}
-  .cover-name{font-size:30px;font-weight:900;text-transform:uppercase;letter-spacing:-.01em;margin:0 0 18px;}
+  .cover-right{flex:1;min-width:0;}
+  .cover-name-input{font-size:28px;font-weight:900;text-transform:uppercase;letter-spacing:-.01em;margin:0 0 18px;width:100%;}
   .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   .field-box{background:var(--dark2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;}
   .field-box .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin-bottom:5px;}
-  .field-box .val{font-size:15px;font-weight:700;color:var(--off);}
-  .field-box .val small{display:block;font-size:11px;font-weight:500;color:var(--muted);}
+  .field-box .val{font-size:15px;}
   @media(max-width:760px){.cover-card{flex-direction:column;}.cover-photo{width:100%;}}
 
   /* ---------- MASONRY GRID ---------- */
-  .masonry{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;margin-bottom:0;}
+  .masonry{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;margin-bottom:18px;}
   .masonry .card{margin-bottom:0;}
   @media(max-width:820px){.masonry{grid-template-columns:1fr;}}
 
   .pill-list{display:flex;flex-direction:column;gap:10px;}
-  .pill-item{background:var(--dark2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.5;color:var(--gray);}
+  .pill-item{background:var(--dark2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;}
+  .pill-item .in{font-size:13px;line-height:1.5;font-weight:500;color:var(--gray);}
+  textarea.auto-grow{resize:none;overflow:hidden;display:block;min-height:20px;}
+  .add-row-btn{background:transparent;border:1px dashed var(--line);color:var(--muted);border-radius:12px;padding:10px 14px;font-size:12px;font-weight:600;width:100%;}
+  .add-row-btn:hover{border-color:var(--lime);color:var(--lime);}
 
   .narrative h4{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin:16px 0 6px;}
   .narrative h4:first-child{margin-top:0;}
-  .narrative p{font-size:13.5px;line-height:1.65;color:var(--gray);margin:0 0 10px;}
+  .narrative textarea.in{font-size:13.5px;line-height:1.65;color:var(--gray);font-weight:500;resize:vertical;min-height:64px;}
 
-  .perf-body p{font-size:13.5px;line-height:1.7;color:var(--gray);margin:0 0 18px;}
+  .perf-body textarea.in{font-size:13.5px;line-height:1.7;color:var(--gray);font-weight:500;resize:vertical;min-height:70px;margin-bottom:18px;}
   .metric-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
   .metric-row .m-lbl{width:150px;flex:none;font-size:12.5px;color:var(--gray);}
-  .metric-track{flex:1;height:5px;background:var(--dark2);border-radius:3px;overflow:hidden;}
-  .metric-track i{display:block;height:100%;width:0;background:var(--lime);border-radius:3px;transition:width 1s cubic-bezier(.2,.8,.2,1);}
-  .metric-row .m-val{width:60px;text-align:right;flex:none;font-size:13px;font-weight:800;color:var(--lime);}
+  .metric-track{flex:1;height:5px;background:var(--dark2);border-radius:3px;overflow:hidden;position:relative;}
+  .metric-track i{display:block;height:100%;background:var(--lime);border-radius:3px;transition:width .3s ease;}
+  .metric-row input[type=range]{position:absolute;inset:-8px 0;width:100%;height:20px;opacity:0;cursor:pointer;margin:0;}
+  .metric-row .m-val{width:44px;text-align:right;flex:none;font-size:13px;font-weight:800;color:var(--lime);}
 
   /* ---------- CROSS-SELL ---------- */
-  .suggestion-heading{font-size:14px;font-weight:800;text-decoration:underline;text-underline-offset:4px;margin:0 0 14px;text-transform:uppercase;letter-spacing:.02em;}
-  .suggestion-text{font-size:13.5px;line-height:1.7;color:var(--gray);margin:0 0 22px;max-width:760px;}
+  .suggestion-heading{font-size:14px;font-weight:800;text-decoration:underline;text-underline-offset:4px;margin:0 0 16px;text-transform:uppercase;letter-spacing:.02em;}
+  .suggestion-text.in{font-size:13.5px;line-height:1.7;color:var(--gray);font-weight:500;margin:6px 0 22px;max-width:760px;resize:vertical;min-height:54px;}
   .role-tiles{display:flex;align-items:center;gap:22px;flex-wrap:wrap;}
-  .role-tile{background:var(--dark2);border:1px solid var(--line);border-radius:14px;padding:20px 26px;text-align:left;min-width:140px;}
-  .role-tile .n{font-size:30px;font-weight:900;color:var(--lime);line-height:1;margin-bottom:6px;}
-  .role-tile .lbl{font-size:13px;font-weight:600;color:var(--off);}
+  .role-tile{background:var(--dark2);border:1px solid var(--line);border-radius:14px;padding:16px 20px;text-align:left;min-width:150px;}
+  .role-tile .n-row{display:flex;align-items:baseline;gap:2px;margin-bottom:6px;}
+  .role-tile .n-row .in{width:44px;font-size:26px;font-weight:900;color:var(--lime);}
+  .role-tile .lbl-input{font-size:13px;font-weight:600;color:var(--off);}
   .tile-divider{width:1px;height:44px;background:var(--line);transform:rotate(18deg);}
 
   .catalog-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:26px 0 24px;}
@@ -119,47 +140,42 @@
 
   /* ---------- FOOTER ---------- */
   .footer-card{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;}
-  .footer-card .kicker{margin-bottom:6px;}
   .footer-card .links{font-size:13px;color:var(--gray);}
   .footer-card .links a:hover{color:var(--lime);}
-  .footer-card img{height:20px;opacity:.85;}
+  .footer-card img{height:20px;width:auto;opacity:.85;align-self:center;}
+  .footer-wordmark{display:none;align-items:center;font-weight:900;font-size:13px;color:#161616;}
+  .footer-wordmark span{color:#8a9c00;}
+
+  .review-type-seg{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;width:100%;margin-top:6px;}
+  .review-type-seg button{flex:1;background:transparent;border:none;color:var(--muted);padding:8px 6px;font-size:11px;font-weight:700;}
+  .review-type-seg button.active{background:var(--off);color:var(--dark);}
+
+  /* ---------- PRESENTING MODE (clean, no visible form chrome, empty optional fields hidden by JS) ---------- */
+  body.presenting .in{border-color:transparent !important;pointer-events:none;cursor:default;}
+  body.presenting .in:hover{background:none;}
+  body.presenting .in:focus{background:none;}
+  body.presenting textarea.in{border:none !important;padding:0;}
+  body.presenting .metric-row input[type=range]{pointer-events:none;}
+  body.presenting .edit-hint{display:none;}
+  .field-optional-hidden{display:none !important;}
 
   .empty-state{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;padding:40px;}
   .empty-state h1{font-size:20px;margin:0;}
   .empty-state p{color:var(--muted);font-size:13px;max-width:440px;margin:0;line-height:1.6;}
-  .empty-state code{background:var(--dark2);padding:2px 6px;border-radius:5px;font-size:12px;}
 
   .section-hidden{display:none;}
-  .footer-wordmark{display:none;align-items:center;font-weight:900;font-size:13px;color:#161616;}
-  .footer-wordmark span{color:#8a9c00;}
 
-  /* ---------- PRINT (zero-dependency fallback) ---------- */
-  @media print{
-    .sidebar-actions, .lang-toggle{display:none !important;}
-    .app{display:block;}
-    .sidebar{position:static;height:auto;border:none;}
-    .main{max-width:100%;padding:20px;}
-    body{background:#fff;color:#161616;}
-    .card, .field-box, .pill-item, .role-tile, .cat-card{background:#f6f6f4;border-color:#ddd;}
-    .card .dots{display:none;}
-  }
-
-  /* ---------- PDF EXPORT (html2canvas capture mode) ---------- */
-  body.pdf-export{background:#ffffff;color:#161616;}
-  body.pdf-export .sidebar-actions, body.pdf-export .lang-toggle, body.pdf-export .card .dots{display:none !important;}
-  body.pdf-export .sidebar{position:static;height:auto;border-color:#e2e2e2;}
-  body.pdf-export .app{display:block;}
-  body.pdf-export .main{max-width:100%;padding:24px;}
-  body.pdf-export .card, body.pdf-export .field-box, body.pdf-export .pill-item, body.pdf-export .role-tile, body.pdf-export .cat-card{
+  /* ---------- PDF EXPORT (light theme for the off-screen text-only snapshot) ---------- */
+  body.pdf-export{background:#ffffff;}
+  #pdfSnapshot{color:#161616;}
+  #pdfSnapshot .card, #pdfSnapshot .field-box, #pdfSnapshot .pill-item, #pdfSnapshot .role-tile, #pdfSnapshot .cat-card{
     background:#f6f6f4;border-color:#e2e2e2;}
-  body.pdf-export .page-title, body.pdf-export .cover-name{color:#161616;}
-  body.pdf-export .page-sub, body.pdf-export .narrative p, body.pdf-export .perf-body p, body.pdf-export .pill-item,
-  body.pdf-export .metric-row .m-lbl, body.pdf-export .suggestion-text, body.pdf-export .field-box .val small,
-  body.pdf-export .footer-card .links{color:#3a3a3a;}
-  body.pdf-export .card .kicker, body.pdf-export .field-box .lbl, body.pdf-export .narrative h4{color:#5c6d00;}
-  body.pdf-export .side-nav{display:none;}
-  body.pdf-export .footer-card img{display:none;}
-  body.pdf-export .footer-wordmark{display:inline-flex !important;}
+  #pdfSnapshot .page-title, #pdfSnapshot .cover-name-input{color:#161616;}
+  #pdfSnapshot .card{color:#3a3a3a;}
+  #pdfSnapshot .card .kicker, #pdfSnapshot .field-box .lbl, #pdfSnapshot .narrative h4{color:#5c6d00;}
+  #pdfSnapshot .footer-card .links{color:#3a3a3a;}
+  #pdfSnapshot .m-lbl{color:#3a3a3a;}
+  #pdfSnapshot .cta-btn{color:#1c1c1c;}
 
   @media(max-width:960px){
     .app{flex-direction:column;}
@@ -167,6 +183,7 @@
     .sidebar h1{display:none;}
     .side-nav{display:none;}
     .sidebar-actions{flex-direction:row;margin-top:0;margin-left:auto;}
+    .btn{width:auto;}
     .main{padding:24px 20px 60px;}
     .cover-card{flex-direction:column;}
   }
@@ -177,268 +194,273 @@
 
 <script>
 /* =========================================================================
-   DATA SOURCE: Google Sheets (published as CSV) — one row per client review.
-   Replace SHEET_CSV_URL below with your sheet's published CSV link:
-   Google Sheets → File → Share → Publish to web → select your tab → CSV → Publish
+   Self-contained editable report — data is entered right on this page and
+   saved to this browser's storage (localStorage), keyed per client.
+   No Google Sheets, no separate setup page, no photo upload.
    ========================================================================= */
-const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSLjDMQ2TyBMuEmF7CoG1IhNq0dSfhPVCPC0ShjxUwJ-S3eH92IeSDPwIj_M3DpeS9UGVHb_MytG6kk/pubhtml";
 
-const COLUMNS = ["client_slug","client_name","glofer_name","glofer_role","period","start_date","reports_to","schedule",
-  "photo_url","review_type","team_text","project_text","highlight_1","highlight_2","highlight_3","highlight_4",
-  "perf_text","stat_attendance","stat_online","stat_response","stat_escalations","autonomy","flexibility","seniority",
+const STORE_PREFIX = "glofy_pr_v2_";
+const FIELDS = ["client_name","glofer_name","glofer_role","start_date","period_from","period_to","reports_to","schedule",
+  "review_type","team_text","project_text","highlight_1","highlight_2","highlight_3","highlight_4","perf_text",
+  "metric_attendance","metric_online","metric_response","metric_escalations",
   "headsup_1","headsup_2","headsup_3","cross_note","cross_role_1","cross_role_1_n","cross_role_2","cross_role_2_n"];
 
-/* ---------------- Minimal CSV parser (no external library) ---------------- */
-function parseCSV(text){
-  const rows = [];
-  let row = [], field = "", inQuotes = false;
-  for(let i=0;i<text.length;i++){
-    const c = text[i], next = text[i+1];
-    if(inQuotes){
-      if(c === '"' && next === '"'){ field += '"'; i++; }
-      else if(c === '"'){ inQuotes = false; }
-      else field += c;
-    } else {
-      if(c === '"') inQuotes = true;
-      else if(c === ','){ row.push(field); field = ""; }
-      else if(c === '\n'){ row.push(field); rows.push(row); row = []; field = ""; }
-      else if(c === '\r'){ /* skip */ }
-      else field += c;
-    }
-  }
-  if(field.length || row.length){ row.push(field); rows.push(row); }
-  return rows.filter(r => r.length>1 || r[0]!=="");
-}
-function csvToRecords(text){
-  const rows = parseCSV(text);
-  if(rows.length < 1) return [];
-  const header = rows[0].map(h=>h.trim());
-  return rows.slice(1).filter(r=>r.some(c=>c && c.trim())).map(r=>{
-    const rec = {};
-    header.forEach((h,i)=>{ rec[h] = (r[i]||"").trim(); });
-    return rec;
-  });
-}
-
-function esc(s){ return (s||"").toString().replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function initials(name){ return (name||"").trim().split(/\s+/).slice(0,2).map(w=>w[0]||"").join("").toUpperCase() || "GL"; }
-function slugify(s){ return (s||"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,""); }
-
-let ALL_RECORDS = [];
-let currentLang = "es";
-
 const DEFAULT_PHOTO = "https://raw.githubusercontent.com/comms-glofy/pr/refs/heads/main/glofers.png";
-function resolvePhotoUrl(d){ return d.photo_url || DEFAULT_PHOTO; }
+
+const DEFAULTS = {
+  client_name:"Northwind Logistics", glofer_name:"Martina Ibarra", glofer_role:"Backend Developer",
+  start_date:"2026-05-12", period_from:"2026-05", period_to:"2026-08", reports_to:"David Kessler (Engineering Lead)",
+  schedule:"full-time", review_type:"recurring",
+  team_text:"Reporta directo a David Kessler, con quien tiene una relación de trabajo cercana. Comparte squad con dos desarrolladores del lado del cliente. No hubo incorporaciones nuevas al equipo durante el período.",
+  project_text:"Northwind Logistics está migrando su sistema de tracking de envíos a una arquitectura de microservicios. El rol cubre el desarrollo del servicio de rastreo en tiempo real y la integración con el proveedor de GPS.",
+  highlight_1:"Entregó el primer microservicio de tracking dos semanas antes de la fecha estimada.",
+  highlight_2:"Resolvió un bug de sincronización de datos que afectaba a tres clientes internos.",
+  highlight_3:"Documentó el proceso de integración con el proveedor de GPS.",
+  highlight_4:"",
+  perf_text:"Está online durante el horario acordado con la cámara prendida en las daily y en las reuniones de planning. Responde consultas por Slack dentro de las dos horas. No tuvo ausencias ni tardanzas en el período.",
+  metric_attendance:"100", metric_online:"95", metric_response:"85", metric_escalations:"100",
+  headsup_1:"", headsup_2:"", headsup_3:"",
+  cross_note:"", cross_role_1:"", cross_role_1_n:"+1", cross_role_2:"", cross_role_2_n:"+1"
+};
 
 const CATALOG = [
   {key:"high", img:"https://raw.githubusercontent.com/comms-glofy/scope/refs/heads/main/high.jpg",
-    en:"High Specialization", es:"Alta especialización", roles:["AI Engineer","ML Engineer","Python Engineer","Golang Engineer","Ruby Developer","DevOps Engineer"]},
+    title:"High Specialization", roles:["AI Engineer","ML Engineer","Python Engineer","Golang Engineer","Ruby Developer","DevOps Engineer"]},
   {key:"enterprise", img:"https://raw.githubusercontent.com/comms-glofy/scope/refs/heads/main/enterprise.jpg",
-    en:"ERP / CRM / Enterprise", es:"ERP / CRM / Enterprise", roles:["SAP Consultant","Salesforce Developer","Oracle Developer","Dynamics 365 Developer","Odoo Developer"]},
+    title:"ERP / CRM / Enterprise", roles:["SAP Consultant","Salesforce Developer","Oracle Developer","Dynamics 365 Developer","Odoo Developer"]},
   {key:"core-tech", img:"https://raw.githubusercontent.com/comms-glofy/scope/refs/heads/main/core-tech.jpg",
-    en:"Core Tech", es:"Core Tech", roles:["Full Stack Developer","Back-End Developer","Front-End Developer","Mobile Developer","QA Automation Engineer"]},
+    title:"Core Tech", roles:["Full Stack Developer","Back-End Developer","Front-End Developer","Mobile Developer","QA Automation Engineer"]},
   {key:"nodev", img:"https://raw.githubusercontent.com/comms-glofy/scope/refs/heads/main/nodev.jpg",
-    en:"Digital No-Dev", es:"Digital No-Dev", roles:["UX/UI Designer","Growth Marketer","Data Analytics","Graphic Designer","Content Creator"]},
+    title:"Digital No-Dev", roles:["UX/UI Designer","Growth Marketer","Data Analytics","Graphic Designer","Content Creator"]},
   {key:"sales", img:null,
-    en:"Sales &amp; Revenue", es:"Sales &amp; Revenue", roles:["Sales Engineer / Solutions Consultant","SDR","BDR","Account Executive","Account Manager","Customer Success Manager","Sales Operations / RevOps"]}
+    title:"Sales &amp; Revenue", roles:["Sales Engineer / Solutions Consultant","SDR","BDR","Account Executive","Account Manager","Customer Success Manager","Sales Operations / RevOps"]}
 ];
 
+/* Section titles (sidebar nav + matching card kickers) stay in English always, per instruction. */
+const SECTION_TITLES = {
+  datos:"General Info", team:"Team and Project", highlights:"Highlights", performance:"Performance and Attitude",
+  alineacion:"Heads-up (Client Alignment)", cross:"Grow the team", contacto:"Contact"
+};
+
+/* Everything else (field labels, buttons, prompts) is translatable. */
 const I18N = {
-  es:{ title:"Informe de\nPerformance Review", navDatos:"Datos generales", navTeam:"Team and Project", navHl:"Highlights",
-    navPerf:"Performance and Attitude", navHu:"Alineación con el cliente (Heads-up)", navCross:"Hacer crecer el equipo (Cross-sell)", navContact:"Contacto",
-    downloadPdf:"Descargar PDF", printPdf:"Imprimir / Guardar como PDF",
-    pageTitle:"PERFORMANCE REVIEW",
-    pageSub:"Reunión mensual (luego trimestral) entre el comercial de Glofy y el cliente, para repasar cómo viene el recurso asignado. Se apoya en el informe completo que envía People, pero no se muestra el informe completo.",
-    datosK:"Datos generales", rolLbl:"Rol", clienteLbl:"Cliente", periodoLbl:"Período cubierto", fechaLbl:"Fecha de inicio",
-    reportaLbl:"Reporta", modalidadLbl:"Modalidad",
-    teamK:"Team and Project", equipoLbl:"Equipo", proyectoLbl:"Proyecto",
-    hlK:"Highlights",
-    perfK:"Performance and Attitude", metricasLbl:"Métricas",
-    m1:"Puntualidad", m2:"Cámara / online", m3:"Tiempo de respuesta promedio", m4:"Escalamientos",
-    huK:"Alineación con el cliente (Heads-up)",
-    crossK:"Hacer crecer el equipo (Cross-sell)", sugerenciaH:"Sugerencia de Glofy para nuevo talento",
-    catalogoCta:"Catálogo completo y tarifas en glofy.co/scopes",
-    contactoK:"Contacto",
-    emptyH:"No hay ningún informe cargado", emptyP:"Verificá que la hoja de Google Sheets esté publicada y que el enlace esté bien configurado en el código, o que el cliente seleccionado exista en la planilla.",
-    pdfError:"No se pudo generar el PDF. Probá con el botón de Imprimir / Guardar como PDF."
+  es:{ downloadPdf:"Descargar PDF", clienteLbl:"Cliente", newClientOpt:"+ Nuevo cliente…", newClientPrompt:"Nombre del cliente para el nuevo informe:",
+    reviewTypeLbl:"Tipo de review", firstReview:"Primera", recurringReview:"Recurrente",
+    modeLbl:"Vista", editModeBtn:"Completar", presentModeBtn:"Presentar", hideControls:"Ocultar controles", showControls:"Mostrar controles",
+    pageTitle:"PERFORMANCE REVIEW", editHint:"Hacé clic en cualquier campo para editarlo — se guarda solo.",
+    rolLbl:"Rol", clienteFieldLbl:"Cliente", periodoLbl:"Período cubierto", fechaLbl:"Fecha de inicio", reportaLbl:"Reporta", modalidadLbl:"Modalidad",
+    fullTime:"Full time", partTime:"Part time",
+    equipoLbl:"Equipo", proyectoLbl:"Proyecto",
+    m1:"Puntualidad", m2:"Cámara / online", m3:"Tiempo de respuesta", m4:"Escalamientos (ausencia de)",
+    sugerenciaH:"Sugerencia de Glofy para nuevo talento", sugerenciaPh:"Escribí una sugerencia de talento para este cliente (opcional)…",
+    rolTilePh:"Rol sugerido", catalogoCta:"Catálogo completo y tarifas en glofy.co/scopes",
+    highlightPh:"Escribí un highlight…", headsupPh:"Escribí un punto a alinear…", addHighlight:"+ Agregar highlight", addHeadsup:"+ Agregar punto",
+    emptyH:"No hay ningún informe cargado en este navegador", emptyP:"Creá uno nuevo desde el selector de cliente en la barra lateral.",
+    pdfError:"No se pudo generar el PDF."
   },
-  en:{ title:"Performance Review\nReport", navDatos:"General info", navTeam:"Team and Project", navHl:"Highlights",
-    navPerf:"Performance and Attitude", navHu:"Client alignment (Heads-up)", navCross:"Grow the team (Cross-sell)", navContact:"Contact",
-    downloadPdf:"Download PDF", printPdf:"Print / Save as PDF",
-    pageTitle:"PERFORMANCE REVIEW",
-    pageSub:"Monthly (then quarterly) meeting between the Glofy commercial and the client, to review how the assigned resource is doing. Draws on the full report People sends, but the full report is never shown.",
-    datosK:"General info", rolLbl:"Role", clienteLbl:"Client", periodoLbl:"Period covered", fechaLbl:"Start date",
-    reportaLbl:"Reports to", modalidadLbl:"Schedule",
-    teamK:"Team and Project", equipoLbl:"Team", proyectoLbl:"Project",
-    hlK:"Highlights",
-    perfK:"Performance and Attitude", metricasLbl:"Metrics",
-    m1:"On-time attendance", m2:"Camera-on / online", m3:"Avg. response time", m4:"Escalations",
-    huK:"Client alignment (Heads-up)",
-    crossK:"Grow the team (Cross-sell)", sugerenciaH:"Glofy's suggestion for new talent",
-    catalogoCta:"Full catalog and rates at glofy.co/scopes",
-    contactoK:"Contact",
-    emptyH:"No review loaded", emptyP:"Check that the Google Sheet is published and the link is set correctly in the code, or that the selected client exists in the sheet.",
-    pdfError:"Could not generate the PDF. Try the Print / Save as PDF button instead."
+  en:{ downloadPdf:"Download PDF", clienteLbl:"Client", newClientOpt:"+ New client…", newClientPrompt:"Client name for the new review:",
+    reviewTypeLbl:"Review type", firstReview:"First", recurringReview:"Recurring",
+    modeLbl:"View", editModeBtn:"Fill in", presentModeBtn:"Present", hideControls:"Hide controls", showControls:"Show controls",
+    pageTitle:"PERFORMANCE REVIEW", editHint:"Click any field to edit it — it saves automatically.",
+    rolLbl:"Role", clienteFieldLbl:"Client", periodoLbl:"Period covered", fechaLbl:"Start date", reportaLbl:"Reports to", modalidadLbl:"Schedule",
+    fullTime:"Full time", partTime:"Part time",
+    equipoLbl:"Team", proyectoLbl:"Project",
+    m1:"On-time attendance", m2:"Camera-on / online", m3:"Response time", m4:"Escalation-free rate",
+    sugerenciaH:"Glofy's suggestion for new talent", sugerenciaPh:"Write a talent suggestion for this client (optional)…",
+    rolTilePh:"Suggested role", catalogoCta:"Full catalog and rates at glofy.co/scopes",
+    highlightPh:"Write a highlight…", headsupPh:"Write an alignment point…", addHighlight:"+ Add highlight", addHeadsup:"+ Add point",
+    emptyH:"No review loaded in this browser", emptyP:"Create one from the client selector in the sidebar.",
+    pdfError:"Could not generate the PDF."
   }
 };
 
-function currentSlug(){ return new URLSearchParams(location.search).get("client"); }
+let currentLang = "es";
+let mode = "edit";
+let controlsCollapsed = false;
 
-async function boot(){
-  renderShell(null, []);
-  if(SHEET_CSV_URL.indexOf("PASTE_YOUR") === 0){
-    renderShell(null, [], "config");
-    return;
-  }
-  try{
-    const res = await fetch(SHEET_CSV_URL, {cache:"no-store"});
-    if(!res.ok) throw new Error("HTTP "+res.status);
-    const text = await res.text();
-    ALL_RECORDS = csvToRecords(text);
-  }catch(err){
-    console.error("Could not load sheet", err);
-    renderShell(null, [], "fetch");
-    return;
-  }
-  const slug = currentSlug() || (ALL_RECORDS[0] && ALL_RECORDS[0].client_slug);
-  const record = ALL_RECORDS.find(r => r.client_slug === slug) || ALL_RECORDS[0] || null;
-  renderShell(record, ALL_RECORDS);
+function esc(s){ return (s||"").toString().replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function initials(name){ return (name||"").trim().split(/\s+/).slice(0,2).map(w=>w[0]||"").join("").toUpperCase() || "GL"; }
+function slugify(s){ return (s||"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"") || "client"; }
+
+function listClients(){ return Object.keys(localStorage).filter(k=>k.startsWith(STORE_PREFIX)).map(k=>k.slice(STORE_PREFIX.length)); }
+function currentSlug(){ return new URLSearchParams(location.search).get("client") || listClients()[0] || null; }
+
+function loadRecord(slug){
+  try{ const raw = localStorage.getItem(STORE_PREFIX+slug); return raw ? JSON.parse(raw) : null; }catch(e){ return null; }
+}
+function saveRecord(slug, data){
+  data.client_slug = slug;
+  try{ localStorage.setItem(STORE_PREFIX+slug, JSON.stringify(data)); }catch(e){ console.error("save failed", e); }
 }
 
-function renderShell(record, records, errorType){
-  const app = document.getElementById("app");
-  if(!record){
-    const t = I18N[currentLang];
-    let msg = t.emptyP;
-    if(errorType === "config") msg = currentLang==="es"
-      ? "Todavía no se configuró la hoja de Google Sheets en el código (SHEET_CSV_URL)."
-      : "The Google Sheet hasn't been configured yet in the code (SHEET_CSV_URL).";
-    if(errorType === "fetch") msg = currentLang==="es"
-      ? "No se pudo leer la hoja de Google Sheets. Confirmá que esté publicada (File → Share → Publish to web → CSV)."
-      : "Could not read the Google Sheet. Confirm it's published (File → Share → Publish to web → CSV).";
-    app.innerHTML = `
+function monthLabel(ym, lang){
+  if(!ym) return "";
+  const [y,m] = ym.split("-").map(Number);
+  const d = new Date(y, (m||1)-1, 1);
+  return d.toLocaleDateString(lang==="es" ? "es-AR" : "en-US", {month:"short", year:"numeric"});
+}
+function periodDisplay(d, lang){
+  const a = monthLabel(d.period_from, lang), b = monthLabel(d.period_to, lang);
+  if(a && b) return a + " – " + b;
+  return a || b || "";
+}
+function dateDisplay(iso, lang){
+  if(!iso) return "";
+  const [y,m,day] = iso.split("-");
+  return lang==="es" ? `${day}/${m}/${y}` : `${m}/${day}/${y}`;
+}
+
+function boot(){
+  let slug = currentSlug();
+  if(!slug){
+    slug = slugify(DEFAULTS.client_name) + "-demo";
+    saveRecord(slug, Object.assign({}, DEFAULTS));
+    const url = new URL(location); url.searchParams.set("client", slug); history.replaceState(null,"",url);
+  }
+  render(slug);
+}
+
+function render(slug){
+  const t = I18N[currentLang];
+  const clients = listClients();
+  let d = loadRecord(slug);
+  if(!d){
+    document.getElementById("app").innerHTML = `
       <div class="app">
-        <div class="main" style="max-width:100%;">
-          <div class="empty-state">
-            <h1>${t.emptyH}</h1>
-            <p>${msg}</p>
-          </div>
-        </div>
+        <main class="main" style="max-width:100%;">
+          <div class="empty-state"><h1>${t.emptyH}</h1><p>${t.emptyP}</p></div>
+        </main>
       </div>`;
     return;
   }
-  renderPage(record, records);
-}
+  FIELDS.forEach(f=>{ if(d[f]===undefined) d[f] = DEFAULTS[f]!==undefined ? DEFAULTS[f] : ""; });
 
-function renderPage(d, records){
-  const t = I18N[currentLang];
   const isFirst = d.review_type === "first";
-  const stats = [
-    [d.stat_attendance, t.m1], [d.stat_online, t.m2], [d.stat_response, t.m3], [d.stat_escalations, t.m4]
-  ];
-  const autonomy = Number(d.autonomy)||0, flex = Number(d.flexibility)||0, seniority = Number(d.seniority)||0;
+  const clientOptions = clients.map(c=>{
+    const rec = loadRecord(c);
+    const label = (rec && rec.client_name) ? rec.client_name : c;
+    return `<option value="${esc(c)}" ${c===slug?"selected":""}>${esc(label)}</option>`;
+  }).join("");
 
-  const clientOptions = records.map(r=>`<option value="${esc(r.client_slug)}" ${r.client_slug===d.client_slug?"selected":""}>${esc(r.client_name||r.client_slug)}</option>`).join("");
-
-  const highlights = [d.highlight_1,d.highlight_2,d.highlight_3,d.highlight_4].filter(Boolean);
-  const headsups = [d.headsup_1,d.headsup_2,d.headsup_3].filter(Boolean);
-  const roleTiles = [];
-  if(d.cross_role_1) roleTiles.push([d.cross_role_1_n||"+1", d.cross_role_1]);
-  if(d.cross_role_2) roleTiles.push([d.cross_role_2_n||"+1", d.cross_role_2]);
+  const roleTilesHtml = [
+    ["cross_role_1_n","cross_role_1"], ["cross_role_2_n","cross_role_2"]
+  ].map(([nKey,lblKey],i)=>`
+    ${i>0?'<div class="tile-divider"></div>':''}
+    <div class="role-tile">
+      <div class="n-row"><input class="in" id="${nKey}" value="${esc(d[nKey])}" placeholder="+1" maxlength="4"></div>
+      <input class="in lbl-input" id="${lblKey}" value="${esc(d[lblKey])}" placeholder="${t.rolTilePh}">
+    </div>`).join("");
 
   document.getElementById("app").innerHTML = `
   <div class="app">
     <aside class="sidebar">
       <img class="logo" src="https://raw.githubusercontent.com/comms-glofy/glofy-assets/refs/heads/main/logo-rebrand-glofy.png" alt="Glofy">
-      <h1>${t.title.split("\n").map(esc).join("<br>")}</h1>
+      <h1>Performance<br>Review</h1>
       <nav class="side-nav">
-        <a href="#datos" data-sec="datos" class="active">${t.navDatos}</a>
-        <a href="#team" data-sec="team" class="${isFirst?"":"hidden-link"}">${t.navTeam}</a>
-        <a href="#highlights" data-sec="highlights">${t.navHl}</a>
-        <a href="#performance" data-sec="performance">${t.navPerf}</a>
-        <a href="#alineacion" data-sec="alineacion" class="${headsups.length?"":"hidden-link"}">${t.navHu}</a>
-        <a href="#cross" data-sec="cross">${t.navCross}</a>
-        <a href="#contacto" data-sec="contacto">${t.navContact}</a>
+        <a href="#datos" data-sec="datos" class="active">${SECTION_TITLES.datos}</a>
+        <a href="#team" data-sec="team" class="${isFirst?"":"hidden-link"}">${SECTION_TITLES.team}</a>
+        <a href="#highlights" data-sec="highlights">${SECTION_TITLES.highlights}</a>
+        <a href="#performance" data-sec="performance">${SECTION_TITLES.performance}</a>
+        <a href="#alineacion" data-sec="alineacion">${SECTION_TITLES.alineacion}</a>
+        <a href="#cross" data-sec="cross">${SECTION_TITLES.cross}</a>
+        <a href="#contacto" data-sec="contacto">${SECTION_TITLES.contacto}</a>
       </nav>
-      <div class="sidebar-actions">
+      <div class="sidebar-actions" id="sidebarActions">
         <label class="mini">${t.clienteLbl}</label>
-        <select id="clientSelect">${clientOptions}</select>
+        <select id="clientSelect">${clientOptions}<option value="__new__">${t.newClientOpt}</option></select>
+        <label class="mini" style="margin-top:10px;">${t.modeLbl}</label>
+        <div class="review-type-seg" id="modeSeg">
+          <button data-v="edit" class="${mode==="edit"?"active":""}">${t.editModeBtn}</button>
+          <button data-v="presenting" class="${mode==="presenting"?"active":""}">${t.presentModeBtn}</button>
+        </div>
+        <label class="mini" style="margin-top:10px;">${t.reviewTypeLbl}</label>
+        <div class="review-type-seg" id="reviewTypeSeg">
+          <button data-v="first" class="${isFirst?"active":""}">${t.firstReview}</button>
+          <button data-v="recurring" class="${isFirst?"":"active"}">${t.recurringReview}</button>
+        </div>
         <div class="lang-toggle" style="margin-top:10px;"><button id="esBtn" class="${currentLang==="es"?"active":""}">ES</button><button id="enBtn" class="${currentLang==="en"?"active":""}">EN</button></div>
         <button class="btn primary" id="pdfBtn" style="margin-top:8px;">↓ <span id="pdfBtnLabel">${t.downloadPdf}</span></button>
-        <button class="btn ghost" id="printBtn" style="font-size:11px;">${t.printPdf}</button>
       </div>
+      <button class="collapse-toggle" id="collapseToggle"><span class="chev">▾</span> <span id="collapseLabel">${t.hideControls}</span></button>
     </aside>
 
     <main class="main">
       <div class="page-title">${t.pageTitle}</div>
-      <p class="page-sub">${t.pageSub}</p>
+      <div class="edit-hint" style="font-size:12px;color:var(--muted);margin:-18px 0 26px;">${t.editHint}</div>
 
       <section class="card cover-card" id="datos">
-        <div class="cover-photo" id="coverPhotoWrap">
-          <img id="coverPhotoImg" src="${esc(resolvePhotoUrl(d))}" crossorigin="anonymous" onerror="this.style.display='none'; document.getElementById('coverPhotoFallback').style.display='flex';">
-          <div class="ph-fallback" id="coverPhotoFallback" style="display:none;">${initials(d.glofer_name)}</div>
-        </div>
+        <div class="cover-photo"><img src="${DEFAULT_PHOTO}" crossorigin="anonymous" onerror="this.style.display='none'"></div>
         <div class="cover-right">
-          <div class="kicker">${t.datosK}</div>
-          <div class="cover-name">${esc(d.glofer_name)}</div>
+          <div class="kicker">${SECTION_TITLES.datos}</div>
+          <input class="in cover-name-input" id="glofer_name" value="${esc(d.glofer_name)}" placeholder="Nombre del Glofer">
           <div class="field-grid">
-            <div class="field-box"><div class="lbl">${t.rolLbl}</div><div class="val">${esc(d.glofer_role)}</div></div>
-            <div class="field-box"><div class="lbl">${t.fechaLbl}</div><div class="val">${esc(d.start_date)}</div></div>
-            <div class="field-box"><div class="lbl">${t.clienteLbl}</div><div class="val">${esc(d.client_name)}</div></div>
-            <div class="field-box"><div class="lbl">${t.reportaLbl}</div><div class="val">${esc(d.reports_to)}</div></div>
-            <div class="field-box"><div class="lbl">${t.periodoLbl}</div><div class="val">${esc(d.period)}</div></div>
-            <div class="field-box"><div class="lbl">${t.modalidadLbl}</div><div class="val">${esc(d.schedule)}</div></div>
+            <div class="field-box"><div class="lbl">${t.rolLbl}</div><input class="in val" id="glofer_role" value="${esc(d.glofer_role)}"></div>
+            <div class="field-box"><div class="lbl">${t.fechaLbl}</div><input class="in val" type="date" id="start_date" value="${esc(d.start_date)}"></div>
+            <div class="field-box"><div class="lbl">${t.clienteFieldLbl}</div><input class="in val" id="client_name" value="${esc(d.client_name)}"></div>
+            <div class="field-box"><div class="lbl">${t.reportaLbl}</div><input class="in val" id="reports_to" value="${esc(d.reports_to)}"></div>
+            <div class="field-box">
+              <div class="lbl">${t.periodoLbl}</div>
+              <div style="display:flex;gap:6px;align-items:center;">
+                <input class="in val" type="month" id="period_from" value="${esc(d.period_from)}" style="font-size:12px;">
+                <span style="color:var(--muted);">–</span>
+                <input class="in val" type="month" id="period_to" value="${esc(d.period_to)}" style="font-size:12px;">
+              </div>
+            </div>
+            <div class="field-box"><div class="lbl">${t.modalidadLbl}</div>
+              <select class="in val" id="schedule">
+                <option value="full-time" ${d.schedule==="full-time"?"selected":""}>${t.fullTime}</option>
+                <option value="part-time" ${d.schedule==="part-time"?"selected":""}>${t.partTime}</option>
+              </select>
+            </div>
           </div>
         </div>
       </section>
 
       <div class="masonry">
-        <section class="card ${headsups.length?"":"section-hidden"}" id="alineacion">
-          <div class="dots">⋮</div>
-          <div class="kicker">${t.huK}</div>
-          <div class="pill-list">${headsups.map(h=>`<div class="pill-item">${esc(h)}</div>`).join("")}</div>
+        <section class="card" id="alineacion">
+          <div class="kicker">${SECTION_TITLES.alineacion}</div>
+          <div class="pill-list" id="headsupList">
+            ${["headsup_1","headsup_2","headsup_3"].map(k=>`<div class="pill-item" data-field="${k}"><textarea class="in auto-grow" id="${k}" rows="1" placeholder="${t.headsupPh}">${esc(d[k])}</textarea></div>`).join("")}
+          </div>
         </section>
 
         <section class="card" id="highlights">
-          <div class="dots">⋮</div>
-          <div class="kicker">${t.hlK}</div>
-          <div class="pill-list">${highlights.map(h=>`<div class="pill-item">${esc(h)}</div>`).join("")}</div>
+          <div class="kicker">${SECTION_TITLES.highlights}</div>
+          <div class="pill-list">
+            ${["highlight_1","highlight_2","highlight_3","highlight_4"].map(k=>`<div class="pill-item" data-field="${k}"><textarea class="in auto-grow" id="${k}" rows="1" placeholder="${t.highlightPh}">${esc(d[k])}</textarea></div>`).join("")}
+          </div>
         </section>
 
         <section class="card perf-body" id="performance">
-          <div class="dots">⋮</div>
-          <div class="kicker">${t.perfK}</div>
-          <p>${esc(d.perf_text)}</p>
-          <div class="kicker" style="margin-top:18px;">${t.metricasLbl}</div>
-          ${stats.map(([val,lbl])=>`
+          <div class="kicker">${SECTION_TITLES.performance}</div>
+          <textarea class="in auto-grow" id="perf_text" rows="1">${esc(d.perf_text)}</textarea>
+          ${[["metric_attendance",t.m1],["metric_online",t.m2],["metric_response",t.m3],["metric_escalations",t.m4]].map(([key,lbl])=>`
           <div class="metric-row">
             <div class="m-lbl">${lbl}</div>
-            <div class="metric-track"><i data-target="${escPct(val)}"></i></div>
-            <div class="m-val">${esc(val)}</div>
+            <div class="metric-track"><i id="${key}_bar" style="width:${esc(d[key])}%"></i><input type="range" min="0" max="100" id="${key}" value="${esc(d[key])}"></div>
+            <div class="m-val" id="${key}_val">${esc(d[key])}%</div>
           </div>`).join("")}
         </section>
 
         <section class="card narrative ${isFirst?"":"section-hidden"}" id="team">
-          <div class="dots">⋮</div>
-          <div class="kicker">${t.teamK}</div>
-          <h4>${t.equipoLbl}</h4><p>${esc(d.team_text)}</p>
-          <h4>${t.proyectoLbl}</h4><p>${esc(d.project_text)}</p>
+          <div class="kicker">${SECTION_TITLES.team}</div>
+          <h4>${t.equipoLbl}</h4><textarea class="in auto-grow" id="team_text" rows="1">${esc(d.team_text)}</textarea>
+          <h4>${t.proyectoLbl}</h4><textarea class="in auto-grow" id="project_text" rows="1">${esc(d.project_text)}</textarea>
         </section>
       </div>
 
       <section class="card" id="cross">
-        <div class="dots">⋮</div>
-        <div class="kicker">${t.crossK}</div>
-        ${d.cross_note ? `
-        <div class="suggestion-heading">${t.sugerenciaH}</div>
-        <p class="suggestion-text">${esc(d.cross_note)}</p>
-        ${roleTiles.length ? `<div class="role-tiles">${roleTiles.map(([n,lbl],i)=>`${i>0?'<div class="tile-divider"></div>':''}<div class="role-tile"><div class="n">${esc(n)}</div><div class="lbl">${esc(lbl)}</div></div>`).join("")}</div>` : ``}
-        ` : ``}
+        <div class="kicker">${SECTION_TITLES.cross}</div>
+        <div id="suggestionBlock">
+          <div class="suggestion-heading">${t.sugerenciaH}</div>
+          <textarea class="in auto-grow suggestion-text" id="cross_note" rows="1" placeholder="${t.sugerenciaPh}">${esc(d.cross_note)}</textarea>
+          <div class="role-tiles">${roleTilesHtml}</div>
+        </div>
 
-        <div class="catalog-grid" style="margin-top:${d.cross_note?'26px':'6px'};">
+        <div class="catalog-grid">
           ${CATALOG.map(cat=>`
           <div class="cat-card ${cat.img?"":"no-photo"}">
-            ${cat.img ? `<div class="cat-photo"><img src="${cat.img}" crossorigin="anonymous" onerror="this.parentElement.style.display='none'"><div class="cat-title">${cat[currentLang]}</div></div>` : `<div class="cat-title">${cat[currentLang]}</div>`}
+            ${cat.img ? `<div class="cat-photo"><img src="${cat.img}" crossorigin="anonymous" onerror="this.parentElement.style.display='none'"><div class="cat-title">${cat.title}</div></div>` : `<div class="cat-title">${cat.title}</div>`}
             <div class="cat-tags">${cat.roles.map(r=>`<span class="cat-tag">${esc(r)}</span>`).join("")}</div>
           </div>`).join("")}
         </div>
@@ -447,7 +469,7 @@ function renderPage(d, records){
 
       <section class="card footer-card" id="contacto">
         <div>
-          <div class="kicker">${t.contactoK}</div>
+          <div class="kicker">${SECTION_TITLES.contacto}</div>
           <div class="links"><a href="mailto:hello@glofy.co">hello@glofy.co</a> &nbsp;·&nbsp; <a href="https://glofy.co" target="_blank">glofy.co</a></div>
         </div>
         <img src="https://raw.githubusercontent.com/comms-glofy/glofy-assets/refs/heads/main/logo-rebrand-glofy.png" alt="Glofy">
@@ -456,32 +478,103 @@ function renderPage(d, records){
     </main>
   </div>`;
 
-  wireInteractivity(d, records);
-  animateMetrics();
-  renderRadarless(autonomy, flex, seniority); // placeholder no-op kept for future use
+  wireInteractivity(slug, d, clients);
+  document.body.classList.toggle("presenting", mode==="presenting");
+  applyPresentingVisibility(d);
+  document.querySelectorAll("textarea.auto-grow").forEach(autoGrow);
 }
 
-function escPct(v){
-  const n = parseFloat(String(v).replace("%","").replace("<","").replace("h",""));
-  if(isNaN(n)) return 60;
-  if(String(v).includes("%")) return Math.max(4, Math.min(100, n));
-  return 70; // non-numeric metrics (e.g. "Diaria", "<2h") show a fixed indicative bar
-}
-function animateMetrics(){
-  document.querySelectorAll(".metric-track i").forEach(el=>{
-    requestAnimationFrame(()=>{ el.style.width = el.dataset.target + "%"; });
+function autoGrow(el){ el.style.height = "auto"; el.style.height = el.scrollHeight + "px"; }
+
+function applyPresentingVisibility(d){
+  const presenting = mode === "presenting";
+  // hide individual empty optional highlight/headsup rows only while presenting
+  ["highlight_1","highlight_2","highlight_3","highlight_4","headsup_1","headsup_2","headsup_3"].forEach(k=>{
+    const wrap = document.querySelector(`.pill-item[data-field="${k}"]`);
+    if(!wrap) return;
+    const empty = !(d[k] && d[k].trim());
+    wrap.classList.toggle("field-optional-hidden", presenting && empty);
   });
-}
-function renderRadarless(){ /* no-op — this design uses metric bars, not a radar, per the approved PDF */ }
+  // hide the whole Heads-up card (and its nav link) only if ALL three are empty
+  const anyHeadsup = [d.headsup_1,d.headsup_2,d.headsup_3].some(v=>v && v.trim());
+  const card = document.getElementById("alineacion");
+  const navLink = document.querySelector('.side-nav a[data-sec="alineacion"]');
+  const shouldHide = presenting && !anyHeadsup;
+  if(card) card.classList.toggle("field-optional-hidden", shouldHide);
+  if(navLink) navLink.classList.toggle("hidden-link", shouldHide);
 
-function wireInteractivity(d, records){
-  document.getElementById("esBtn").onclick = ()=>{ currentLang="es"; renderPage(d, records); };
-  document.getElementById("enBtn").onclick = ()=>{ currentLang="en"; renderPage(d, records); };
-  document.getElementById("clientSelect").onchange = (e)=>{
-    const url = new URL(location); url.searchParams.set("client", e.target.value); history.replaceState(null,"",url);
-    const rec = records.find(r=>r.client_slug===e.target.value);
-    if(rec) renderPage(rec, records);
+  // hide the "suggestion for new talent" block if nothing was filled in
+  const anySuggestion = (d.cross_note && d.cross_note.trim()) || (d.cross_role_1 && d.cross_role_1.trim()) || (d.cross_role_2 && d.cross_role_2.trim());
+  const suggestionBlock = document.getElementById("suggestionBlock");
+  if(suggestionBlock) suggestionBlock.classList.toggle("field-optional-hidden", presenting && !anySuggestion);
+}
+
+function wireInteractivity(slug, d, clients){
+  function save(){
+    FIELDS.forEach(f=>{ const el=document.getElementById(f); if(el) d[f] = el.value; });
+    saveRecord(slug, d);
+    // keep client dropdown label in sync if the name changed
+    const sel = document.getElementById("clientSelect");
+    const opt = sel.querySelector(`option[value="${CSS.escape(slug)}"]`);
+    if(opt) opt.textContent = d.client_name || slug;
+  }
+
+  document.querySelectorAll(".card input.in, .card textarea.in, .card select.in").forEach(el=>{
+    if(el.type === "range") return;
+    el.addEventListener("input", save);
+    el.addEventListener("change", save);
+    if(el.classList.contains("auto-grow")){
+      el.addEventListener("input", ()=>autoGrow(el));
+    }
+  });
+
+  document.querySelectorAll("#modeSeg button").forEach(b=>{
+    b.onclick = ()=>{ save(); mode = b.dataset.v; render(slug); };
+  });
+
+  const collapseBtn = document.getElementById("collapseToggle");
+  const actionsEl = document.getElementById("sidebarActions");
+  actionsEl.classList.toggle("collapsed", controlsCollapsed);
+  collapseBtn.classList.toggle("collapsed", controlsCollapsed);
+  document.getElementById("collapseLabel").textContent = controlsCollapsed ? I18N[currentLang].showControls : I18N[currentLang].hideControls;
+  collapseBtn.onclick = ()=>{
+    controlsCollapsed = !controlsCollapsed;
+    actionsEl.classList.toggle("collapsed", controlsCollapsed);
+    collapseBtn.classList.toggle("collapsed", controlsCollapsed);
+    document.getElementById("collapseLabel").textContent = controlsCollapsed ? I18N[currentLang].showControls : I18N[currentLang].hideControls;
   };
+
+  ["metric_attendance","metric_online","metric_response","metric_escalations"].forEach(key=>{
+    const range = document.getElementById(key);
+    range.addEventListener("input", ()=>{
+      document.getElementById(key+"_bar").style.width = range.value + "%";
+      document.getElementById(key+"_val").textContent = range.value + "%";
+      save();
+    });
+  });
+
+  document.getElementById("esBtn").onclick = ()=>{ save(); currentLang="es"; render(slug); };
+  document.getElementById("enBtn").onclick = ()=>{ save(); currentLang="en"; render(slug); };
+
+  document.getElementById("clientSelect").onchange = (e)=>{
+    if(e.target.value === "__new__"){
+      const name = prompt(I18N[currentLang].newClientPrompt);
+      if(!name){ render(slug); return; }
+      const newSlug = slugify(name) + "-" + Date.now().toString(36).slice(-4);
+      const fresh = Object.assign({}, DEFAULTS, {client_name:name, glofer_name:"", glofer_role:"", team_text:"", project_text:"",
+        highlight_1:"",highlight_2:"",highlight_3:"",highlight_4:"", perf_text:"", cross_note:"", cross_role_1:"", cross_role_2:""});
+      saveRecord(newSlug, fresh);
+      const url = new URL(location); url.searchParams.set("client", newSlug); history.replaceState(null,"",url);
+      render(newSlug);
+      return;
+    }
+    const url = new URL(location); url.searchParams.set("client", e.target.value); history.replaceState(null,"",url);
+    render(e.target.value);
+  };
+
+  document.querySelectorAll("#reviewTypeSeg button").forEach(b=>{
+    b.onclick = ()=>{ d.review_type = b.dataset.v; saveRecord(slug, d); render(slug); };
+  });
 
   const links = document.querySelectorAll(".side-nav a:not(.hidden-link)");
   const sections = Array.from(links).map(a=>document.getElementById(a.dataset.sec)).filter(Boolean);
@@ -496,30 +589,115 @@ function wireInteractivity(d, records){
   }, {rootMargin:"-20% 0px -70% 0px"});
   sections.forEach(s=>spy.observe(s));
 
-  document.getElementById("printBtn").onclick = ()=>window.print();
-
   document.getElementById("pdfBtn").onclick = async ()=>{
+    save();
     const btn = document.getElementById("pdfBtn");
     btn.disabled = true;
+    const snapshot = buildPdfSnapshot(d);
+    document.body.appendChild(snapshot);
     document.body.classList.add("pdf-export");
     await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
     try{
-      const canvas = await html2canvas(document.querySelector(".app"), { backgroundColor:"#ffffff", scale:2, useCORS:true });
+      const canvas = await html2canvas(snapshot, { backgroundColor:"#ffffff", scale:2, useCORS:true });
       const imgData = canvas.toDataURL("image/jpeg", 0.95);
       const { jsPDF } = window.jspdf;
       const pdfWidthPt = 800;
       const pdfHeightPt = canvas.height * (pdfWidthPt / canvas.width);
       const pdf = new jsPDF({ unit:"pt", format:[pdfWidthPt, pdfHeightPt] });
       pdf.addImage(imgData, "JPEG", 0, 0, pdfWidthPt, pdfHeightPt);
-      pdf.save(`glofy-performance-review-${slugify(d.client_name)||d.client_slug}.pdf`);
+      pdf.save(`glofy-performance-review-${slugify(d.client_name)||slug}.pdf`);
     }catch(err){
       console.error(err);
       alert(I18N[currentLang].pdfError);
     }finally{
       document.body.classList.remove("pdf-export");
+      snapshot.remove();
       btn.disabled = false;
     }
   };
+}
+
+/* ---------------- PDF snapshot: pure text/div markup, no form elements at all ----------------
+   html2canvas struggles to reliably render <input>/<select>/<textarea> content (especially
+   wrapped multi-line text), which is what caused the earlier cut-off exports. Building a
+   throwaway, off-screen, form-free copy of the report sidesteps that limitation entirely. */
+function ptext(v){ return `<div style="white-space:pre-wrap;word-wrap:break-word;">${esc(v) || "&nbsp;"}</div>`; }
+function buildPdfSnapshot(d){
+  const t = I18N[currentLang];
+  const isFirst = d.review_type === "first";
+  const anyHeadsup = [d.headsup_1,d.headsup_2,d.headsup_3].some(v=>v && v.trim());
+  const highlights = [d.highlight_1,d.highlight_2,d.highlight_3,d.highlight_4].filter(v=>v && v.trim());
+  const headsups = [d.headsup_1,d.headsup_2,d.headsup_3].filter(v=>v && v.trim());
+  const metrics = [["metric_attendance",t.m1],["metric_online",t.m2],["metric_response",t.m3],["metric_escalations",t.m4]];
+
+  const wrap = document.createElement("div");
+  wrap.id = "pdfSnapshot";
+  wrap.style.cssText = "position:fixed;top:0;left:-99999px;width:860px;background:#ffffff;padding:40px;";
+  wrap.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:26px;">
+      <img src="https://raw.githubusercontent.com/comms-glofy/glofy-assets/refs/heads/main/favicon.png" crossorigin="anonymous" style="height:28px;width:auto;display:block;" onerror="this.style.display='none'">
+      <div style="font-weight:900;font-size:16px;color:#161616;">Glofy</div>
+      <div class="page-title" style="font-size:22px;margin:0 0 0 12px;border-left:1px solid #ddd;padding-left:14px;">${t.pageTitle}</div>
+    </div>
+
+    <div class="card cover-card">
+      <div class="cover-photo"><img src="${DEFAULT_PHOTO}" crossorigin="anonymous" onerror="this.style.display='none'"></div>
+      <div class="cover-right">
+        <div class="kicker">${SECTION_TITLES.datos}</div>
+        <div class="cover-name-input" style="border:none;">${esc(d.glofer_name)}</div>
+        <div class="field-grid">
+          <div class="field-box"><div class="lbl">${t.rolLbl}</div><div class="val">${esc(d.glofer_role)}</div></div>
+          <div class="field-box"><div class="lbl">${t.fechaLbl}</div><div class="val">${esc(dateDisplay(d.start_date, currentLang))}</div></div>
+          <div class="field-box"><div class="lbl">${t.clienteFieldLbl}</div><div class="val">${esc(d.client_name)}</div></div>
+          <div class="field-box"><div class="lbl">${t.reportaLbl}</div><div class="val">${esc(d.reports_to)}</div></div>
+          <div class="field-box"><div class="lbl">${t.periodoLbl}</div><div class="val">${esc(periodDisplay(d, currentLang))}</div></div>
+          <div class="field-box"><div class="lbl">${t.modalidadLbl}</div><div class="val">${d.schedule==="part-time"?t.partTime:t.fullTime}</div></div>
+        </div>
+      </div>
+    </div>
+
+    ${isFirst ? `
+    <div class="card narrative">
+      <div class="kicker">${SECTION_TITLES.team}</div>
+      <h4>${t.equipoLbl}</h4>${ptext(d.team_text)}
+      <h4>${t.proyectoLbl}</h4>${ptext(d.project_text)}
+    </div>` : ``}
+
+    <div class="card">
+      <div class="kicker">${SECTION_TITLES.highlights}</div>
+      <div class="pill-list">${highlights.map(h=>`<div class="pill-item">${ptext(h)}</div>`).join("")}</div>
+    </div>
+
+    <div class="card perf-body">
+      <div class="kicker">${SECTION_TITLES.performance}</div>
+      ${ptext(d.perf_text)}
+      ${metrics.map(([key,lbl])=>`
+      <div class="metric-row">
+        <div class="m-lbl">${lbl}</div>
+        <div class="metric-track"><i style="width:${esc(d[key]||0)}%"></i></div>
+        <div class="m-val">${esc(d[key]||0)}%</div>
+      </div>`).join("")}
+    </div>
+
+    ${anyHeadsup ? `
+    <div class="card">
+      <div class="kicker">${SECTION_TITLES.alineacion}</div>
+      <div class="pill-list">${headsups.map(h=>`<div class="pill-item">${ptext(h)}</div>`).join("")}</div>
+    </div>` : ``}
+
+    <div class="card">
+      <div class="kicker">${SECTION_TITLES.cross}</div>
+      <a href="https://glofy.co/scopes" style="color:#3a3a3a;font-size:14px;font-weight:600;text-decoration:none;">${t.catalogoCta}</a>
+    </div>
+
+    <div class="card footer-card">
+      <div>
+        <div class="kicker">${SECTION_TITLES.contacto}</div>
+        <div class="links">hello@glofy.co · glofy.co</div>
+      </div>
+    </div>
+  `;
+  return wrap;
 }
 
 boot();
