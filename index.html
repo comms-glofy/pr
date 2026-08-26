@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Glofy | Performance Review</title>
+<title>Glofy · Performance Review</title>
 <link rel="icon" href="https://raw.githubusercontent.com/comms-glofy/glofy-assets/refs/heads/main/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -33,16 +33,9 @@
   .side-nav a:hover{color:var(--gray);}
   .side-nav a.active{color:#fff;font-weight:700;}
   .side-nav a.hidden-link{display:none;}
-  .sidebar-actions{display:flex;flex-direction:column;gap:8px;margin-top:26px;overflow:hidden;max-height:600px;transition:max-height .35s ease, opacity .3s ease, margin-top .35s ease;opacity:1;}
-  .sidebar-actions.collapsed{max-height:0;opacity:0;margin-top:0;pointer-events:none;}
-  .collapse-toggle{
-    display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:22px;
-    background:transparent;border:1px dashed var(--line);color:var(--muted);border-radius:8px;padding:7px;
-    font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
-  }
-  .collapse-toggle:hover{border-color:var(--lime);color:var(--lime);}
-  .collapse-toggle .chev{transition:transform .3s ease;display:inline-block;}
-  .collapse-toggle.collapsed .chev{transform:rotate(180deg);}
+  .sidebar-actions-wrap{display:grid;grid-template-rows:1fr;transition:grid-template-rows .35s ease;margin-top:26px;}
+  .sidebar-actions-wrap.collapsed{grid-template-rows:0fr;margin-top:0;}
+  .sidebar-actions{display:flex;flex-direction:column;gap:8px;overflow:hidden;min-height:0;}
   .main{flex:1;min-width:0;padding:40px 44px 90px;max-width:1180px;}
 
   .btn{border:1px solid var(--line);background:var(--dark2);color:var(--off);border-radius:999px;padding:10px 16px;
@@ -54,11 +47,23 @@
   .lang-toggle{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;align-self:flex-start;}
   .lang-toggle button{background:transparent;border:none;color:var(--muted);padding:8px 12px;font-size:11px;font-weight:700;}
   .lang-toggle button.active{background:var(--lime);color:var(--dark);}
-  select#clientSelect{width:100%;appearance:none;background:var(--dark2);color:var(--off);border:1px solid var(--line);
-    border-radius:8px;padding:9px 10px;font-size:12px;font-weight:600;margin-top:6px;}
+  select.sel{width:100%;appearance:none;background:var(--dark2);color:var(--off);border:1px solid var(--line);
+    border-radius:8px;padding:9px 10px;font-size:12px;font-weight:600;margin-top:6px;
+    background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+    background-position:calc(100% - 15px) 55%,calc(100% - 10px) 55%;background-size:5px 5px;background-repeat:no-repeat;}
   .sidebar label.mini{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;align-self:flex-start;}
 
-  .page-title{font-size:38px;font-weight:900;letter-spacing:-.02em;line-height:1.05;margin:0 0 28px;text-transform:uppercase;}
+  .collapse-toggle{
+    display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:22px;
+    background:transparent;border:1px dashed var(--line);color:var(--muted);border-radius:8px;padding:7px;
+    font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+  }
+  .collapse-toggle:hover{border-color:var(--lime);color:var(--lime);}
+  .collapse-toggle .chev{transition:transform .3s ease;display:inline-block;}
+  .collapse-toggle.collapsed .chev{transform:rotate(180deg);}
+
+  .page-title{font-size:38px;font-weight:900;letter-spacing:-.02em;line-height:1.05;margin:0 0 4px;text-transform:uppercase;}
+  .edit-hint{font-size:12px;color:var(--muted);margin:0 0 26px;}
 
   /* ---------- CARD ---------- */
   .card{position:relative;background:var(--dark3);border:1px solid var(--line);border-radius:22px;padding:26px 26px 24px;margin-bottom:18px;}
@@ -72,14 +77,24 @@
   select.in{appearance:none;cursor:pointer;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
     background-position:calc(100% - 4px) 55%,calc(100% - 0px) 55%;background-size:5px 5px;background-repeat:no-repeat;padding-right:14px;}
   input[type=date].in, input[type=month].in{color-scheme:dark;}
+  textarea.auto-grow{resize:none;overflow:hidden;display:block;min-height:20px;}
   textarea.in{border:1px dashed rgba(206,255,0,0.3);border-radius:8px;padding:8px 10px;}
   textarea.in:hover{background:rgba(206,255,0,0.05);}
   textarea.in:focus{border:1px solid var(--lime);background:rgba(206,255,0,0.08);}
 
   /* ---------- DATOS GENERALES ---------- */
   .cover-card{display:flex;gap:24px;align-items:stretch;}
-  .cover-photo{width:220px;flex:none;border-radius:16px;overflow:hidden;background:var(--dark2);}
+  .cover-photo{width:220px;flex:none;border-radius:16px;overflow:hidden;background:var(--dark2);position:relative;}
   .cover-photo img{width:100%;height:100%;object-fit:cover;display:block;min-height:220px;}
+  .photo-edit-btn{
+    position:absolute;bottom:10px;right:10px;width:34px;height:34px;border-radius:50%;
+    background:rgba(28,28,28,0.85);border:1px solid var(--line);color:var(--off);
+    display:flex;align-items:center;justify-content:center;opacity:0;transition:.15s ease;cursor:pointer;
+  }
+  .cover-photo:hover .photo-edit-btn, .photo-edit-btn:focus-within{opacity:1;}
+  .photo-edit-btn:hover{border-color:var(--lime);color:var(--lime);}
+  .photo-edit-btn input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+  body.presenting .photo-edit-btn{display:none;}
   .cover-right{flex:1;min-width:0;}
   .cover-name-input{font-size:28px;font-weight:900;text-transform:uppercase;letter-spacing:-.01em;margin:0 0 18px;width:100%;}
   .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
@@ -96,15 +111,12 @@
   .pill-list{display:flex;flex-direction:column;gap:10px;}
   .pill-item{background:var(--dark2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;}
   .pill-item .in{font-size:13px;line-height:1.5;font-weight:500;color:var(--gray);}
-  textarea.auto-grow{resize:none;overflow:hidden;display:block;min-height:20px;}
-  .add-row-btn{background:transparent;border:1px dashed var(--line);color:var(--muted);border-radius:12px;padding:10px 14px;font-size:12px;font-weight:600;width:100%;}
-  .add-row-btn:hover{border-color:var(--lime);color:var(--lime);}
 
   .narrative h4{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin:16px 0 6px;}
   .narrative h4:first-child{margin-top:0;}
-  .narrative textarea.in{font-size:13.5px;line-height:1.65;color:var(--gray);font-weight:500;resize:vertical;min-height:64px;}
+  .narrative textarea.in{font-size:13.5px;line-height:1.65;color:var(--gray);font-weight:500;min-height:64px;}
 
-  .perf-body textarea.in{font-size:13.5px;line-height:1.7;color:var(--gray);font-weight:500;resize:vertical;min-height:70px;margin-bottom:18px;}
+  .perf-body textarea.in{font-size:13.5px;line-height:1.7;color:var(--gray);font-weight:500;min-height:70px;margin-bottom:18px;}
   .metric-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
   .metric-row .m-lbl{width:150px;flex:none;font-size:12.5px;color:var(--gray);}
   .metric-track{flex:1;height:5px;background:var(--dark2);border-radius:3px;overflow:hidden;position:relative;}
@@ -112,27 +124,22 @@
   .metric-row input[type=range]{position:absolute;inset:-8px 0;width:100%;height:20px;opacity:0;cursor:pointer;margin:0;}
   .metric-row .m-val{width:44px;text-align:right;flex:none;font-size:13px;font-weight:800;color:var(--lime);}
 
-  /* ---------- CROSS-SELL ---------- */
-  .suggestion-heading{font-size:14px;font-weight:800;text-decoration:underline;text-underline-offset:4px;margin:0 0 16px;text-transform:uppercase;letter-spacing:.02em;}
-  .suggestion-text.in{font-size:13.5px;line-height:1.7;color:var(--gray);font-weight:500;margin:6px 0 22px;max-width:760px;resize:vertical;min-height:54px;}
-  .role-tiles{display:flex;align-items:center;gap:22px;flex-wrap:wrap;}
-  .role-tile{background:var(--dark2);border:1px solid var(--line);border-radius:14px;padding:16px 20px;text-align:left;min-width:150px;}
-  .role-tile .n-row{display:flex;align-items:baseline;gap:2px;margin-bottom:6px;}
-  .role-tile .n-row .in{width:44px;font-size:26px;font-weight:900;color:var(--lime);}
-  .role-tile .lbl-input{font-size:13px;font-weight:600;color:var(--off);}
-  .tile-divider{width:1px;height:44px;background:var(--line);transform:rotate(18deg);}
-
-  .catalog-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:26px 0 24px;}
-  .cat-card{background:var(--dark2);border:1px solid var(--line);border-radius:16px;overflow:hidden;}
-  .cat-photo{height:120px;position:relative;background:var(--dark3);}
-  .cat-photo img{width:100%;height:100%;object-fit:cover;display:block;}
-  .cat-photo::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.65));}
-  .cat-photo .cat-title{position:absolute;left:14px;bottom:10px;z-index:1;font-size:15px;font-weight:800;color:#fff;}
-  .cat-card.no-photo .cat-title{position:static;padding:16px 16px 0;font-size:15px;font-weight:800;color:#fff;}
-  .cat-tags{display:flex;flex-wrap:wrap;gap:6px;padding:14px 14px 16px;}
-  .cat-tag{border:1px solid var(--lime);color:var(--lime);border-radius:999px;padding:5px 11px;font-size:10.5px;font-weight:700;}
-  @media(max-width:900px){.catalog-grid{grid-template-columns:repeat(2,1fr);}}
-  @media(max-width:600px){.catalog-grid{grid-template-columns:1fr;}}
+  /* ---------- GROW THE TEAM: marketing spotlight ---------- */
+  .spotlight-head{font-size:19px;font-weight:800;line-height:1.35;margin:0 0 20px;max-width:600px;}
+  .spotlight-head b{color:var(--lime);}
+  .spotlight-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:8px;}
+  .spotlight-card{position:relative;border-radius:20px;overflow:hidden;border:1px solid var(--line);transition:.2s ease;background:var(--dark2);}
+  .spotlight-card:hover{transform:translateY(-4px);box-shadow:0 20px 40px rgba(0,0,0,0.4);border-color:var(--lime);}
+  .spotlight-photo{position:relative;height:160px;}
+  .spotlight-photo img{width:100%;height:100%;object-fit:cover;display:block;}
+  .spotlight-photo::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg, rgba(28,28,28,0.05) 40%, rgba(28,28,28,0.9) 100%);}
+  .spotlight-photo .sp-tag{position:absolute;left:18px;bottom:14px;z-index:1;display:inline-block;background:var(--lime);color:var(--dark);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:4px 10px;border-radius:999px;}
+  .spotlight-body{padding:20px;}
+  .spotlight-body .sp-title{font-size:20px;font-weight:900;color:#fff;margin-bottom:14px;letter-spacing:-.01em;}
+  .sp-benefits{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px;}
+  .sp-benefits li{display:flex;gap:9px;font-size:12.5px;line-height:1.5;color:var(--gray);}
+  .sp-benefits li::before{content:"✓";flex:none;color:var(--lime);font-weight:800;}
+  @media(max-width:760px){.spotlight-grid{grid-template-columns:1fr;}}
 
   .cta-btn{display:block;width:100%;text-align:center;background:var(--lime);color:var(--dark);border-radius:14px;
     padding:18px;font-size:14.5px;font-weight:800;margin-top:8px;transition:.15s;}
@@ -150,25 +157,25 @@
   .review-type-seg button{flex:1;background:transparent;border:none;color:var(--muted);padding:8px 6px;font-size:11px;font-weight:700;}
   .review-type-seg button.active{background:var(--off);color:var(--dark);}
 
-  /* ---------- PRESENTING MODE (clean, no visible form chrome, empty optional fields hidden by JS) ---------- */
+  .empty-state{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;padding:40px;}
+  .empty-state h1{font-size:20px;margin:0;}
+  .empty-state p{color:var(--muted);font-size:13px;max-width:440px;margin:0;line-height:1.6;}
+
+  .section-hidden{display:none;}
+  .field-optional-hidden{display:none !important;}
+
+  /* ---------- PRESENTING MODE ---------- */
   body.presenting .in{border-color:transparent !important;pointer-events:none;cursor:default;}
   body.presenting .in:hover{background:none;}
   body.presenting .in:focus{background:none;}
   body.presenting textarea.in{border:none !important;padding:0;}
   body.presenting .metric-row input[type=range]{pointer-events:none;}
   body.presenting .edit-hint{display:none;}
-  .field-optional-hidden{display:none !important;}
-
-  .empty-state{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;padding:40px;}
-  .empty-state h1{font-size:20px;margin:0;}
-  .empty-state p{color:var(--muted);font-size:13px;max-width:440px;margin:0;line-height:1.6;}
-
-  .section-hidden{display:none;}
 
   /* ---------- PDF EXPORT (light theme for the off-screen text-only snapshot) ---------- */
   body.pdf-export{background:#ffffff;}
   #pdfSnapshot{color:#161616;}
-  #pdfSnapshot .card, #pdfSnapshot .field-box, #pdfSnapshot .pill-item, #pdfSnapshot .role-tile, #pdfSnapshot .cat-card{
+  #pdfSnapshot .card, #pdfSnapshot .field-box, #pdfSnapshot .pill-item, #pdfSnapshot .cat-card{
     background:#f6f6f4;border-color:#e2e2e2;}
   #pdfSnapshot .page-title, #pdfSnapshot .cover-name-input{color:#161616;}
   #pdfSnapshot .card{color:#3a3a3a;}
@@ -182,7 +189,7 @@
     .sidebar{width:100%;height:auto;position:static;flex-direction:row;flex-wrap:wrap;align-items:center;padding:18px 20px;}
     .sidebar h1{display:none;}
     .side-nav{display:none;}
-    .sidebar-actions{flex-direction:row;margin-top:0;margin-left:auto;}
+    .sidebar-actions{flex-direction:row;flex-wrap:wrap;margin-top:0;margin-left:auto;}
     .btn{width:auto;}
     .main{padding:24px 20px 60px;}
     .cover-card{flex-direction:column;}
@@ -194,16 +201,18 @@
 
 <script>
 /* =========================================================================
-   Self-contained editable report — data is entered right on this page and
-   saved to this browser's storage (localStorage), keyed per client.
-   No Google Sheets, no separate setup page, no photo upload.
+   Multi-level self-contained system:
+   Client -> Talent (a client can have several Glofers, each with their own
+   review history) -> PR record (one per period/month, kept as history so
+   past reviews are never overwritten). Everything saved to this browser's
+   localStorage. No Google Sheets, no separate setup page, no photo upload.
    ========================================================================= */
 
-const STORE_PREFIX = "glofy_pr_v2_";
+const STORE_PREFIX = "glofy_pr_v3_";
 const FIELDS = ["client_name","glofer_name","glofer_role","start_date","period_from","period_to","reports_to","schedule",
   "review_type","team_text","project_text","highlight_1","highlight_2","highlight_3","highlight_4","perf_text",
   "metric_attendance","metric_online","metric_response","metric_escalations",
-  "headsup_1","headsup_2","headsup_3","cross_note","cross_role_1","cross_role_1_n","cross_role_2","cross_role_2_n"];
+  "headsup_1","headsup_2","headsup_3"];
 
 const DEFAULT_PHOTO = "https://raw.githubusercontent.com/comms-glofy/pr/refs/heads/main/glofers.png";
 
@@ -219,9 +228,11 @@ const DEFAULTS = {
   highlight_4:"",
   perf_text:"Está online durante el horario acordado con la cámara prendida en las daily y en las reuniones de planning. Responde consultas por Slack dentro de las dos horas. No tuvo ausencias ni tardanzas en el período.",
   metric_attendance:"100", metric_online:"95", metric_response:"85", metric_escalations:"100",
-  headsup_1:"", headsup_2:"", headsup_3:"",
-  cross_note:"", cross_role_1:"", cross_role_1_n:"+1", cross_role_2:"", cross_role_2_n:"+1"
+  headsup_1:"", headsup_2:"", headsup_3:"", photo_data:""
 };
+/* Fields that carry over automatically when starting a new PR for an existing talent.
+   context that rarely changes month to month. Everything else starts blank. */
+const CARRY_OVER_FIELDS = ["client_name","glofer_name","glofer_role","start_date","reports_to","schedule","team_text","project_text","photo_data"];
 
 const CATALOG = [
   {key:"high", img:"https://raw.githubusercontent.com/comms-glofy/scope/refs/heads/main/high.jpg",
@@ -235,40 +246,62 @@ const CATALOG = [
   {key:"sales", img:"https://raw.githubusercontent.com/comms-glofy/pr/refs/heads/main/sales.png",
     title:"Sales &amp; Revenue", roles:["Sales Engineer / Solutions Consultant","SDR","BDR","Account Executive","Account Manager","Customer Success Manager","Sales Operations / RevOps"]}
 ];
+/* The two lines Marketing wants spotlighted at the top of "Grow the team" */
+const SPOTLIGHT_KEYS = ["nodev","sales"];
 
-/* Section titles (sidebar nav + matching card kickers) stay in English always, per instruction. */
 const SECTION_TITLES = {
   datos:"General Info", team:"Team and Project", highlights:"Highlights", performance:"Performance and Attitude",
   alineacion:"Heads-up (Client Alignment)", cross:"Grow the team", contacto:"Contact"
 };
 
-/* Everything else (field labels, buttons, prompts) is translatable. */
 const I18N = {
-  es:{ downloadPdf:"Descargar PDF", clienteLbl:"Cliente", newClientOpt:"+ Nuevo cliente…", newClientPrompt:"Nombre del cliente para el nuevo informe:",
+  es:{ downloadPdf:"Descargar PDF",
+    clienteLbl:"Cliente", newClientOpt:"+ Nuevo cliente…", newClientPrompt:"Nombre del cliente:",
+    talentoLbl:"Talento", newTalentOpt:"+ Nuevo talento…", newTalentPrompt:"Nombre del Glofer para este nuevo talento:",
+    prLbl:"Período (historial)", newPrOpt:"+ Nueva PR de este mes…",
     reviewTypeLbl:"Tipo de review", firstReview:"Primera", recurringReview:"Recurrente",
     modeLbl:"Vista", editModeBtn:"Completar", presentModeBtn:"Presentar", hideControls:"Ocultar controles", showControls:"Mostrar controles",
-    pageTitle:"PERFORMANCE REVIEW", editHint:"Hacé clic en cualquier campo para editarlo — se guarda solo.",
+    pageTitle:"PERFORMANCE REVIEW", editHint:"Hacé clic en cualquier campo para editarlo. Se guarda solo.",
     rolLbl:"Rol", clienteFieldLbl:"Cliente", periodoLbl:"Período cubierto", fechaLbl:"Fecha de inicio", reportaLbl:"Reporta", modalidadLbl:"Modalidad",
     fullTime:"Full time", partTime:"Part time",
     equipoLbl:"Equipo", proyectoLbl:"Proyecto",
     m1:"Puntualidad", m2:"Cámara / online", m3:"Tiempo de respuesta", m4:"Escalamientos (ausencia de)",
-    sugerenciaH:"Sugerencia de Glofy para nuevo talento", sugerenciaPh:"Escribí una sugerencia de talento para este cliente (opcional)…",
-    rolTilePh:"Rol sugerido", catalogoCta:"Catálogo completo y tarifas en glofy.co/scopes",
-    highlightPh:"Escribí un highlight…", headsupPh:"Escribí un punto a alinear…", addHighlight:"+ Agregar highlight", addHeadsup:"+ Agregar punto",
+    spotlightHead:'<b>Glofy</b> también cubre Digital No-Dev y Sales &amp; Revenue, con el mismo estándar de talento senior.',
+    spTag1:"Talento digital", spTitle1:"Digital No-Dev",
+    sp1b1:"Sumás diseño, growth y contenido sin abrir una búsqueda técnica adicional.",
+    sp1b2:"Un solo proveedor concentra todo el equipo digital, con la misma gestión y reporting.",
+    sp1b3:"Reducís el tiempo de producción de campañas y contenido, sin depender de agencias externas.",
+    spTag2:"Revenue team", spTitle2:"Sales &amp; Revenue",
+    sp2b1:"Cubrís todo el funnel comercial, de SDR a Customer Success, como un solo equipo.",
+    sp2b2:"Sumás capacidad de venta sin ampliar tu estructura interna.",
+    sp2b3:"Empezás a operar en semanas, con talento senior y disponibilidad inmediata.",
+    catalogoCta:"Catálogo completo y tarifas en glofy.co/scopes",
+    highlightPh:"Escribí un highlight…", headsupPh:"Escribí un punto a alinear…",
     emptyH:"No hay ningún informe cargado en este navegador", emptyP:"Creá uno nuevo desde el selector de cliente en la barra lateral.",
     pdfError:"No se pudo generar el PDF."
   },
-  en:{ downloadPdf:"Download PDF", clienteLbl:"Client", newClientOpt:"+ New client…", newClientPrompt:"Client name for the new review:",
+  en:{ downloadPdf:"Download PDF",
+    clienteLbl:"Client", newClientOpt:"+ New client…", newClientPrompt:"Client name:",
+    talentoLbl:"Talent", newTalentOpt:"+ New talent…", newTalentPrompt:"Glofer name for this new talent:",
+    prLbl:"Period (history)", newPrOpt:"+ New PR this month…",
     reviewTypeLbl:"Review type", firstReview:"First", recurringReview:"Recurring",
     modeLbl:"View", editModeBtn:"Fill in", presentModeBtn:"Present", hideControls:"Hide controls", showControls:"Show controls",
-    pageTitle:"PERFORMANCE REVIEW", editHint:"Click any field to edit it — it saves automatically.",
+    pageTitle:"PERFORMANCE REVIEW", editHint:"Click any field to edit it. It saves automatically.",
     rolLbl:"Role", clienteFieldLbl:"Client", periodoLbl:"Period covered", fechaLbl:"Start date", reportaLbl:"Reports to", modalidadLbl:"Schedule",
     fullTime:"Full time", partTime:"Part time",
     equipoLbl:"Team", proyectoLbl:"Project",
     m1:"On-time attendance", m2:"Camera-on / online", m3:"Response time", m4:"Escalation-free rate",
-    sugerenciaH:"Glofy's suggestion for new talent", sugerenciaPh:"Write a talent suggestion for this client (optional)…",
-    rolTilePh:"Suggested role", catalogoCta:"Full catalog and rates at glofy.co/scopes",
-    highlightPh:"Write a highlight…", headsupPh:"Write an alignment point…", addHighlight:"+ Add highlight", addHeadsup:"+ Add point",
+    spotlightHead:'<b>Glofy</b> also covers Digital No-Dev and Sales &amp; Revenue, with the same senior talent standard.',
+    spTag1:"Digital talent", spTitle1:"Digital No-Dev",
+    sp1b1:"Add design, growth and content without opening a separate technical search.",
+    sp1b2:"One single provider covers your entire digital team, under the same management and reporting.",
+    sp1b3:"Cut campaign and content turnaround time without relying on outside agencies.",
+    spTag2:"Revenue team", spTitle2:"Sales &amp; Revenue",
+    sp2b1:"Cover the full commercial funnel, from SDR to Customer Success, as one team.",
+    sp2b2:"Add sales capacity without growing your internal structure.",
+    sp2b3:"Start operating in weeks, with senior, immediately available talent.",
+    catalogoCta:"Full catalog and rates at glofy.co/scopes",
+    highlightPh:"Write a highlight…", headsupPh:"Write an alignment point…",
     emptyH:"No review loaded in this browser", emptyP:"Create one from the client selector in the sidebar.",
     pdfError:"Could not generate the PDF."
   }
@@ -279,18 +312,73 @@ let mode = "edit";
 let controlsCollapsed = false;
 
 function esc(s){ return (s||"").toString().replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function initials(name){ return (name||"").trim().split(/\s+/).slice(0,2).map(w=>w[0]||"").join("").toUpperCase() || "GL"; }
-function slugify(s){ return (s||"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"") || "client"; }
+function slugify(s){ return (s||"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"") || "x"; }
+function shortId(){ return Date.now().toString(36).slice(-6); }
 
-function listClients(){ return Object.keys(localStorage).filter(k=>k.startsWith(STORE_PREFIX)).map(k=>k.slice(STORE_PREFIX.length)); }
-function currentSlug(){ return new URLSearchParams(location.search).get("client") || listClients()[0] || null; }
+/* ---------------- storage: key = STORE_PREFIX + clientSlug + "::" + talentSlug + "::" + prId ---------------- */
+function allKeys(){ return Object.keys(localStorage).filter(k=>k.startsWith(STORE_PREFIX)); }
+function parseKey(key){ const [clientSlug,talentSlug,prId] = key.slice(STORE_PREFIX.length).split("::"); return {clientSlug,talentSlug,prId}; }
+function buildKey(clientSlug,talentSlug,prId){ return STORE_PREFIX + clientSlug + "::" + talentSlug + "::" + prId; }
+function loadByKey(key){ try{ const raw=localStorage.getItem(key); return raw?JSON.parse(raw):null; }catch(e){ return null; } }
+function saveByKey(key, data){ try{ localStorage.setItem(key, JSON.stringify(data)); }catch(e){ console.error("save failed", e); } }
 
-function loadRecord(slug){
-  try{ const raw = localStorage.getItem(STORE_PREFIX+slug); return raw ? JSON.parse(raw) : null; }catch(e){ return null; }
+function listClients(){
+  const map = new Map();
+  allKeys().forEach(k=>{
+    const {clientSlug} = parseKey(k);
+    if(!map.has(clientSlug)){
+      const d = loadByKey(k);
+      map.set(clientSlug, (d && d.client_name) ? d.client_name : clientSlug);
+    }
+  });
+  return Array.from(map.entries()).map(([slug,name])=>({slug,name}));
 }
-function saveRecord(slug, data){
-  data.client_slug = slug;
-  try{ localStorage.setItem(STORE_PREFIX+slug, JSON.stringify(data)); }catch(e){ console.error("save failed", e); }
+function listTalents(clientSlug){
+  const map = new Map();
+  allKeys().forEach(k=>{
+    const parts = parseKey(k);
+    if(parts.clientSlug !== clientSlug) return;
+    if(!map.has(parts.talentSlug)){
+      const d = loadByKey(k);
+      map.set(parts.talentSlug, (d && d.glofer_name) ? d.glofer_name : parts.talentSlug);
+    }
+  });
+  return Array.from(map.entries()).map(([slug,name])=>({slug,name}));
+}
+function listPRs(clientSlug, talentSlug){
+  const out = [];
+  allKeys().forEach(k=>{
+    const parts = parseKey(k);
+    if(parts.clientSlug !== clientSlug || parts.talentSlug !== talentSlug) return;
+    const d = loadByKey(k);
+    if(d) out.push({key:k, prId:parts.prId, updatedAt:d.updated_at||0, periodFrom:d.period_from||""});
+  });
+  out.sort((a,b)=> b.updatedAt - a.updatedAt);
+  return out;
+}
+function mostRecentKeyForClient(clientSlug){
+  const talents = listTalents(clientSlug);
+  let best=null, bestTime=-1;
+  talents.forEach(t=>{
+    listPRs(clientSlug, t.slug).forEach(pr=>{ if(pr.updatedAt>=bestTime){bestTime=pr.updatedAt; best=pr.key;} });
+  });
+  return best;
+}
+function mostRecentClientSlug(){
+  let best=null, bestTime=-1;
+  listClients().forEach(c=>{
+    listTalents(c.slug).forEach(t=>{
+      listPRs(c.slug, t.slug).forEach(pr=>{ if(pr.updatedAt>=bestTime){bestTime=pr.updatedAt; best=c.slug;} });
+    });
+  });
+  return best;
+}
+function mostRecentTalentSlug(clientSlug){
+  let best=null, bestTime=-1;
+  listTalents(clientSlug).forEach(t=>{
+    listPRs(clientSlug, t.slug).forEach(pr=>{ if(pr.updatedAt>=bestTime){bestTime=pr.updatedAt; best=t.slug;} });
+  });
+  return best;
 }
 
 function monthLabel(ym, lang){
@@ -309,22 +397,46 @@ function dateDisplay(iso, lang){
   const [y,m,day] = iso.split("-");
   return lang==="es" ? `${day}/${m}/${y}` : `${m}/${day}/${y}`;
 }
+function currentMonthStr(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); }
 
 function boot(){
-  let slug = currentSlug();
-  if(!slug){
-    slug = slugify(DEFAULTS.client_name) + "-demo";
-    saveRecord(slug, Object.assign({}, DEFAULTS));
-    const url = new URL(location); url.searchParams.set("client", slug); history.replaceState(null,"",url);
+  const params = new URLSearchParams(location.search);
+  let clientSlug = params.get("client");
+  let talentSlug = params.get("talent");
+  let prKey = params.get("pr");
+
+  if(allKeys().length === 0){
+    // seed a demo record so the tool is never empty on first load
+    clientSlug = slugify(DEFAULTS.client_name);
+    talentSlug = slugify(DEFAULTS.glofer_name);
+    const prId = DEFAULTS.period_from + "-" + shortId();
+    const data = Object.assign({}, DEFAULTS, {updated_at:Date.now()});
+    saveByKey(buildKey(clientSlug, talentSlug, prId), data);
+    prKey = buildKey(clientSlug, talentSlug, prId);
   }
-  render(slug);
+
+  if(!clientSlug) clientSlug = mostRecentClientSlug();
+  if(clientSlug && !talentSlug) talentSlug = mostRecentTalentSlug(clientSlug);
+  if(clientSlug && talentSlug && !prKey){
+    const prs = listPRs(clientSlug, talentSlug);
+    prKey = prs.length ? prs[0].key : null;
+  }
+  render(prKey);
 }
 
-function render(slug){
+function updateUrl(key){
+  if(!key) return;
+  const {clientSlug,talentSlug,prId} = parseKey(key);
+  const url = new URL(location);
+  url.searchParams.set("client", clientSlug);
+  url.searchParams.set("talent", talentSlug);
+  url.searchParams.set("pr", key);
+  history.replaceState(null,"",url);
+}
+
+function render(prKey){
   const t = I18N[currentLang];
-  const clients = listClients();
-  let d = loadRecord(slug);
-  if(!d){
+  if(!prKey){
     document.getElementById("app").innerHTML = `
       <div class="app">
         <main class="main" style="max-width:100%;">
@@ -333,23 +445,27 @@ function render(slug){
       </div>`;
     return;
   }
+  let d = loadByKey(prKey);
+  if(!d){
+    render(null);
+    return;
+  }
   FIELDS.forEach(f=>{ if(d[f]===undefined) d[f] = DEFAULTS[f]!==undefined ? DEFAULTS[f] : ""; });
+  if(d.photo_data===undefined) d.photo_data = "";
+  updateUrl(prKey);
+  const {clientSlug,talentSlug} = parseKey(prKey);
 
   const isFirst = d.review_type === "first";
-  const clientOptions = clients.map(c=>{
-    const rec = loadRecord(c);
-    const label = (rec && rec.client_name) ? rec.client_name : c;
-    return `<option value="${esc(c)}" ${c===slug?"selected":""}>${esc(label)}</option>`;
-  }).join("");
+  const clients = listClients();
+  const talents = listTalents(clientSlug);
+  const prs = listPRs(clientSlug, talentSlug);
 
-  const roleTilesHtml = [
-    ["cross_role_1_n","cross_role_1"], ["cross_role_2_n","cross_role_2"]
-  ].map(([nKey,lblKey],i)=>`
-    ${i>0?'<div class="tile-divider"></div>':''}
-    <div class="role-tile">
-      <div class="n-row"><input class="in" id="${nKey}" value="${esc(d[nKey])}" placeholder="+1" maxlength="4"></div>
-      <input class="in lbl-input" id="${lblKey}" value="${esc(d[lblKey])}" placeholder="${t.rolTilePh}">
-    </div>`).join("");
+  const clientOptions = clients.map(c=>`<option value="${esc(c.slug)}" ${c.slug===clientSlug?"selected":""}>${esc(c.name)}</option>`).join("");
+  const talentOptions = talents.map(tt=>`<option value="${esc(tt.slug)}" ${tt.slug===talentSlug?"selected":""}>${esc(tt.name)}</option>`).join("");
+  const prOptions = prs.map(pr=>{
+    const label = monthLabel(pr.periodFrom, currentLang) || pr.prId;
+    return `<option value="${esc(pr.key)}" ${pr.key===prKey?"selected":""}>${esc(label)}</option>`;
+  }).join("");
 
   document.getElementById("app").innerHTML = `
   <div class="app">
@@ -365,31 +481,44 @@ function render(slug){
         <a href="#cross" data-sec="cross">${SECTION_TITLES.cross}</a>
         <a href="#contacto" data-sec="contacto">${SECTION_TITLES.contacto}</a>
       </nav>
-      <div class="sidebar-actions" id="sidebarActions">
+      <div class="sidebar-actions-wrap" id="sidebarActionsWrap"><div class="sidebar-actions" id="sidebarActions">
         <label class="mini">${t.clienteLbl}</label>
-        <select id="clientSelect">${clientOptions}<option value="__new__">${t.newClientOpt}</option></select>
-        <label class="mini" style="margin-top:10px;">${t.modeLbl}</label>
-        <div class="review-type-seg" id="modeSeg">
-          <button data-v="edit" class="${mode==="edit"?"active":""}">${t.editModeBtn}</button>
-          <button data-v="presenting" class="${mode==="presenting"?"active":""}">${t.presentModeBtn}</button>
-        </div>
+        <select class="sel" id="clientSelect">${clientOptions}<option value="__new__">${t.newClientOpt}</option></select>
+
+        <label class="mini" style="margin-top:10px;">${t.talentoLbl}</label>
+        <select class="sel" id="talentSelect">${talentOptions}<option value="__new__">${t.newTalentOpt}</option></select>
+
+        <label class="mini" style="margin-top:10px;">${t.prLbl}</label>
+        <select class="sel" id="prSelect">${prOptions}<option value="__new__">${t.newPrOpt}</option></select>
+
         <label class="mini" style="margin-top:10px;">${t.reviewTypeLbl}</label>
         <div class="review-type-seg" id="reviewTypeSeg">
           <button data-v="first" class="${isFirst?"active":""}">${t.firstReview}</button>
           <button data-v="recurring" class="${isFirst?"":"active"}">${t.recurringReview}</button>
         </div>
+        <label class="mini" style="margin-top:10px;">${t.modeLbl}</label>
+        <div class="review-type-seg" id="modeSeg">
+          <button data-v="edit" class="${mode==="edit"?"active":""}">${t.editModeBtn}</button>
+          <button data-v="presenting" class="${mode==="presenting"?"active":""}">${t.presentModeBtn}</button>
+        </div>
         <div class="lang-toggle" style="margin-top:10px;"><button id="esBtn" class="${currentLang==="es"?"active":""}">ES</button><button id="enBtn" class="${currentLang==="en"?"active":""}">EN</button></div>
         <button class="btn primary" id="pdfBtn" style="margin-top:8px;">↓ <span id="pdfBtnLabel">${t.downloadPdf}</span></button>
-      </div>
+      </div></div>
       <button class="collapse-toggle" id="collapseToggle"><span class="chev">▾</span> <span id="collapseLabel">${t.hideControls}</span></button>
     </aside>
 
     <main class="main">
       <div class="page-title">${t.pageTitle}</div>
-      <div class="edit-hint" style="font-size:12px;color:var(--muted);margin:-18px 0 26px;">${t.editHint}</div>
+      <div class="edit-hint">${t.editHint}</div>
 
       <section class="card cover-card" id="datos">
-        <div class="cover-photo"><img src="${DEFAULT_PHOTO}" crossorigin="anonymous" onerror="this.style.display='none'"></div>
+        <div class="cover-photo">
+          <img id="coverPhotoImg" src="${esc(d.photo_data || DEFAULT_PHOTO)}" crossorigin="anonymous" onerror="this.style.display='none'">
+          <label class="photo-edit-btn" for="photoInput" title="${currentLang==='es' ? 'Cambiar foto' : 'Change photo'}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+            <input type="file" id="photoInput" accept="image/*">
+          </label>
+        </div>
         <div class="cover-right">
           <div class="kicker">${SECTION_TITLES.datos}</div>
           <input class="in cover-name-input" id="glofer_name" value="${esc(d.glofer_name)}" placeholder="Nombre del Glofer">
@@ -451,18 +580,37 @@ function render(slug){
 
       <section class="card" id="cross">
         <div class="kicker">${SECTION_TITLES.cross}</div>
-        <div id="suggestionBlock">
-          <div class="suggestion-heading">${t.sugerenciaH}</div>
-          <textarea class="in auto-grow suggestion-text" id="cross_note" rows="1" placeholder="${t.sugerenciaPh}">${esc(d.cross_note)}</textarea>
-          <div class="role-tiles">${roleTilesHtml}</div>
-        </div>
 
-        <div class="catalog-grid">
-          ${CATALOG.map(cat=>`
-          <div class="cat-card ${cat.img?"":"no-photo"}">
-            ${cat.img ? `<div class="cat-photo"><img src="${cat.img}" crossorigin="anonymous" onerror="this.parentElement.style.display='none'"><div class="cat-title">${cat.title}</div></div>` : `<div class="cat-title">${cat.title}</div>`}
-            <div class="cat-tags">${cat.roles.map(r=>`<span class="cat-tag">${esc(r)}</span>`).join("")}</div>
-          </div>`).join("")}
+        <div class="spotlight-head">${t.spotlightHead}</div>
+        <div class="spotlight-grid">
+          <div class="spotlight-card">
+            <div class="spotlight-photo">
+              <img src="${CATALOG.find(c=>c.key==='nodev').img}" crossorigin="anonymous" onerror="this.style.display='none'">
+              <span class="sp-tag">${t.spTag1}</span>
+            </div>
+            <div class="spotlight-body">
+              <div class="sp-title">${t.spTitle1}</div>
+              <ul class="sp-benefits">
+                <li>${t.sp1b1}</li>
+                <li>${t.sp1b2}</li>
+                <li>${t.sp1b3}</li>
+              </ul>
+            </div>
+          </div>
+          <div class="spotlight-card">
+            <div class="spotlight-photo">
+              <img src="${CATALOG.find(c=>c.key==='sales').img}" crossorigin="anonymous" onerror="this.style.display='none'">
+              <span class="sp-tag">${t.spTag2}</span>
+            </div>
+            <div class="spotlight-body">
+              <div class="sp-title">${t.spTitle2}</div>
+              <ul class="sp-benefits">
+                <li>${t.sp2b1}</li>
+                <li>${t.sp2b2}</li>
+                <li>${t.sp2b3}</li>
+              </ul>
+            </div>
+          </div>
         </div>
         <a class="cta-btn" href="https://glofy.co/scopes" target="_blank">${t.catalogoCta}</a>
       </section>
@@ -478,7 +626,7 @@ function render(slug){
     </main>
   </div>`;
 
-  wireInteractivity(slug, d, clients);
+  wireInteractivity(prKey, d);
   document.body.classList.toggle("presenting", mode==="presenting");
   applyPresentingVisibility(d);
   document.querySelectorAll("textarea.auto-grow").forEach(autoGrow);
@@ -488,61 +636,39 @@ function autoGrow(el){ el.style.height = "auto"; el.style.height = el.scrollHeig
 
 function applyPresentingVisibility(d){
   const presenting = mode === "presenting";
-  // hide individual empty optional highlight/headsup rows only while presenting
   ["highlight_1","highlight_2","highlight_3","highlight_4","headsup_1","headsup_2","headsup_3"].forEach(k=>{
     const wrap = document.querySelector(`.pill-item[data-field="${k}"]`);
     if(!wrap) return;
     const empty = !(d[k] && d[k].trim());
     wrap.classList.toggle("field-optional-hidden", presenting && empty);
   });
-  // hide the whole Heads-up card (and its nav link) only if ALL three are empty
   const anyHeadsup = [d.headsup_1,d.headsup_2,d.headsup_3].some(v=>v && v.trim());
   const card = document.getElementById("alineacion");
   const navLink = document.querySelector('.side-nav a[data-sec="alineacion"]');
   const shouldHide = presenting && !anyHeadsup;
   if(card) card.classList.toggle("field-optional-hidden", shouldHide);
   if(navLink) navLink.classList.toggle("hidden-link", shouldHide);
-
-  // hide the "suggestion for new talent" block if nothing was filled in
-  const anySuggestion = (d.cross_note && d.cross_note.trim()) || (d.cross_role_1 && d.cross_role_1.trim()) || (d.cross_role_2 && d.cross_role_2.trim());
-  const suggestionBlock = document.getElementById("suggestionBlock");
-  if(suggestionBlock) suggestionBlock.classList.toggle("field-optional-hidden", presenting && !anySuggestion);
 }
 
-function wireInteractivity(slug, d, clients){
+function wireInteractivity(prKey, d){
+  const {clientSlug,talentSlug} = parseKey(prKey);
+
   function save(){
     FIELDS.forEach(f=>{ const el=document.getElementById(f); if(el) d[f] = el.value; });
-    saveRecord(slug, d);
-    // keep client dropdown label in sync if the name changed
-    const sel = document.getElementById("clientSelect");
-    const opt = sel.querySelector(`option[value="${CSS.escape(slug)}"]`);
-    if(opt) opt.textContent = d.client_name || slug;
+    d.updated_at = Date.now();
+    saveByKey(prKey, d);
+    const clientOpt = document.querySelector(`#clientSelect option[value="${CSS.escape(clientSlug)}"]`);
+    if(clientOpt) clientOpt.textContent = d.client_name || clientSlug;
+    const talentOpt = document.querySelector(`#talentSelect option[value="${CSS.escape(talentSlug)}"]`);
+    if(talentOpt) talentOpt.textContent = d.glofer_name || talentSlug;
   }
 
   document.querySelectorAll(".card input.in, .card textarea.in, .card select.in").forEach(el=>{
     if(el.type === "range") return;
     el.addEventListener("input", save);
     el.addEventListener("change", save);
-    if(el.classList.contains("auto-grow")){
-      el.addEventListener("input", ()=>autoGrow(el));
-    }
+    if(el.classList.contains("auto-grow")) el.addEventListener("input", ()=>autoGrow(el));
   });
-
-  document.querySelectorAll("#modeSeg button").forEach(b=>{
-    b.onclick = ()=>{ save(); mode = b.dataset.v; render(slug); };
-  });
-
-  const collapseBtn = document.getElementById("collapseToggle");
-  const actionsEl = document.getElementById("sidebarActions");
-  actionsEl.classList.toggle("collapsed", controlsCollapsed);
-  collapseBtn.classList.toggle("collapsed", controlsCollapsed);
-  document.getElementById("collapseLabel").textContent = controlsCollapsed ? I18N[currentLang].showControls : I18N[currentLang].hideControls;
-  collapseBtn.onclick = ()=>{
-    controlsCollapsed = !controlsCollapsed;
-    actionsEl.classList.toggle("collapsed", controlsCollapsed);
-    collapseBtn.classList.toggle("collapsed", controlsCollapsed);
-    document.getElementById("collapseLabel").textContent = controlsCollapsed ? I18N[currentLang].showControls : I18N[currentLang].hideControls;
-  };
 
   ["metric_attendance","metric_online","metric_response","metric_escalations"].forEach(key=>{
     const range = document.getElementById(key);
@@ -553,28 +679,106 @@ function wireInteractivity(slug, d, clients){
     });
   });
 
-  document.getElementById("esBtn").onclick = ()=>{ save(); currentLang="es"; render(slug); };
-  document.getElementById("enBtn").onclick = ()=>{ save(); currentLang="en"; render(slug); };
+  document.getElementById("esBtn").onclick = ()=>{ save(); currentLang="es"; render(prKey); };
+  document.getElementById("enBtn").onclick = ()=>{ save(); currentLang="en"; render(prKey); };
+
+  document.querySelectorAll("#modeSeg button").forEach(b=>{
+    b.onclick = ()=>{ save(); mode = b.dataset.v; render(prKey); };
+  });
+  document.querySelectorAll("#reviewTypeSeg button").forEach(b=>{
+    b.onclick = ()=>{ d.review_type = b.dataset.v; d.updated_at = Date.now(); saveByKey(prKey, d); render(prKey); };
+  });
 
   document.getElementById("clientSelect").onchange = (e)=>{
     if(e.target.value === "__new__"){
       const name = prompt(I18N[currentLang].newClientPrompt);
-      if(!name){ render(slug); return; }
-      const newSlug = slugify(name) + "-" + Date.now().toString(36).slice(-4);
-      const fresh = Object.assign({}, DEFAULTS, {client_name:name, glofer_name:"", glofer_role:"", team_text:"", project_text:"",
-        highlight_1:"",highlight_2:"",highlight_3:"",highlight_4:"", perf_text:"", cross_note:"", cross_role_1:"", cross_role_2:""});
-      saveRecord(newSlug, fresh);
-      const url = new URL(location); url.searchParams.set("client", newSlug); history.replaceState(null,"",url);
-      render(newSlug);
+      if(!name){ render(prKey); return; }
+      const newClientSlug = slugify(name) + "-" + shortId();
+      const talentName = prompt(I18N[currentLang].newTalentPrompt);
+      const newTalentSlug = slugify(talentName || "talent") + "-" + shortId();
+      const prId = currentMonthStr() + "-" + shortId();
+      const fresh = Object.assign({}, DEFAULTS, {client_name:name, glofer_name:talentName||"", glofer_role:"",
+        team_text:"", project_text:"", highlight_1:"",highlight_2:"",highlight_3:"",highlight_4:"", perf_text:"",
+        updated_at:Date.now()});
+      const newKey = buildKey(newClientSlug, newTalentSlug, prId);
+      saveByKey(newKey, fresh);
+      render(newKey);
       return;
     }
-    const url = new URL(location); url.searchParams.set("client", e.target.value); history.replaceState(null,"",url);
+    save();
+    const newClientSlug = e.target.value;
+    const t2 = mostRecentTalentSlug(newClientSlug);
+    const prs = t2 ? listPRs(newClientSlug, t2) : [];
+    render(prs.length ? prs[0].key : null);
+  };
+
+  document.getElementById("talentSelect").onchange = (e)=>{
+    if(e.target.value === "__new__"){
+      const name = prompt(I18N[currentLang].newTalentPrompt);
+      if(!name){ render(prKey); return; }
+      const newTalentSlug = slugify(name) + "-" + shortId();
+      const prId = currentMonthStr() + "-" + shortId();
+      const fresh = Object.assign({}, DEFAULTS, {client_name:d.client_name, glofer_name:name, glofer_role:"",
+        team_text:"", project_text:"", highlight_1:"",highlight_2:"",highlight_3:"",highlight_4:"", perf_text:"",
+        updated_at:Date.now()});
+      const newKey = buildKey(clientSlug, newTalentSlug, prId);
+      saveByKey(newKey, fresh);
+      render(newKey);
+      return;
+    }
+    save();
+    const newTalentSlug = e.target.value;
+    const prs = listPRs(clientSlug, newTalentSlug);
+    render(prs.length ? prs[0].key : null);
+  };
+
+  document.getElementById("prSelect").onchange = (e)=>{
+    if(e.target.value === "__new__"){
+      const prId = currentMonthStr() + "-" + shortId();
+      const fresh = { updated_at: Date.now() };
+      CARRY_OVER_FIELDS.forEach(f=>{ fresh[f] = d[f]; });
+      FIELDS.forEach(f=>{ if(fresh[f]===undefined) fresh[f] = DEFAULTS[f]!==undefined ? DEFAULTS[f] : ""; });
+      fresh.review_type = "recurring";
+      fresh.period_from = currentMonthStr();
+      fresh.period_to = currentMonthStr();
+      const newKey = buildKey(clientSlug, talentSlug, prId);
+      saveByKey(newKey, fresh);
+      render(newKey);
+      return;
+    }
+    save();
     render(e.target.value);
   };
 
-  document.querySelectorAll("#reviewTypeSeg button").forEach(b=>{
-    b.onclick = ()=>{ d.review_type = b.dataset.v; saveRecord(slug, d); render(slug); };
-  });
+  const photoInput = document.getElementById("photoInput");
+  if(photoInput){
+    photoInput.addEventListener("change", (e)=>{
+      const file = e.target.files[0]; if(!file) return;
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        d.photo_data = reader.result;
+        d.updated_at = Date.now();
+        saveByKey(prKey, d);
+        const img = document.getElementById("coverPhotoImg");
+        img.removeAttribute("crossorigin");
+        img.src = reader.result;
+        img.style.display = "";
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  const collapseBtn = document.getElementById("collapseToggle");
+  const actionsEl = document.getElementById("sidebarActionsWrap");
+  actionsEl.classList.toggle("collapsed", controlsCollapsed);
+  collapseBtn.classList.toggle("collapsed", controlsCollapsed);
+  document.getElementById("collapseLabel").textContent = controlsCollapsed ? I18N[currentLang].showControls : I18N[currentLang].hideControls;
+  collapseBtn.onclick = ()=>{
+    controlsCollapsed = !controlsCollapsed;
+    actionsEl.classList.toggle("collapsed", controlsCollapsed);
+    collapseBtn.classList.toggle("collapsed", controlsCollapsed);
+    document.getElementById("collapseLabel").textContent = controlsCollapsed ? I18N[currentLang].showControls : I18N[currentLang].hideControls;
+  };
 
   const links = document.querySelectorAll(".side-nav a:not(.hidden-link)");
   const sections = Array.from(links).map(a=>document.getElementById(a.dataset.sec)).filter(Boolean);
@@ -605,7 +809,7 @@ function wireInteractivity(slug, d, clients){
       const pdfHeightPt = canvas.height * (pdfWidthPt / canvas.width);
       const pdf = new jsPDF({ unit:"pt", format:[pdfWidthPt, pdfHeightPt] });
       pdf.addImage(imgData, "JPEG", 0, 0, pdfWidthPt, pdfHeightPt);
-      pdf.save(`glofy-performance-review-${slugify(d.client_name)||slug}.pdf`);
+      pdf.save(`glofy-performance-review-${slugify(d.client_name)}-${slugify(d.glofer_name)}.pdf`);
     }catch(err){
       console.error(err);
       alert(I18N[currentLang].pdfError);
@@ -619,8 +823,7 @@ function wireInteractivity(slug, d, clients){
 
 /* ---------------- PDF snapshot: pure text/div markup, no form elements at all ----------------
    html2canvas struggles to reliably render <input>/<select>/<textarea> content (especially
-   wrapped multi-line text), which is what caused the earlier cut-off exports. Building a
-   throwaway, off-screen, form-free copy of the report sidesteps that limitation entirely. */
+   wrapped multi-line text). Building a throwaway, off-screen, form-free copy sidesteps that. */
 function ptext(v){ return `<div style="white-space:pre-wrap;word-wrap:break-word;">${esc(v) || "&nbsp;"}</div>`; }
 function buildPdfSnapshot(d){
   const t = I18N[currentLang];
@@ -641,7 +844,7 @@ function buildPdfSnapshot(d){
     </div>
 
     <div class="card cover-card">
-      <div class="cover-photo"><img src="${DEFAULT_PHOTO}" crossorigin="anonymous" onerror="this.style.display='none'"></div>
+      <div class="cover-photo"><img src="${esc(d.photo_data || DEFAULT_PHOTO)}" crossorigin="anonymous" onerror="this.style.display='none'"></div>
       <div class="cover-right">
         <div class="kicker">${SECTION_TITLES.datos}</div>
         <div class="cover-name-input" style="border:none;">${esc(d.glofer_name)}</div>
